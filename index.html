@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="id" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#17191c" />
+    <meta name="application-name" content="Orbit Studio" />
+    <meta
+      name="description"
+      content="Orbit Studio — workbench analitik dengan panel admin lengkap dan pengaturan mendalam. Pasang sekali dari browser, langsung jadi aplikasi."
+    />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Orbit" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <title>Orbit Studio — Workbench & Aplikasi</title>
+
+    <style>
+      /* Inline boot splash: paints before the JS bundle, removed on mount. */
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        display: grid;
+        place-items: center;
+        gap: 0;
+        background: #17191c;
+        background-image: radial-gradient(
+          120% 90% at 50% -10%,
+          rgba(215, 245, 154, 0.09),
+          transparent 60%
+        );
+        color: #ecefe7;
+        font-family: 'Space Grotesk', 'Segoe UI', 'Helvetica Neue', sans-serif;
+        transition: opacity 320ms ease;
+      }
+      #boot-splash[hidden] {
+        display: none;
+      }
+      #boot-splash.boot-splash-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #boot-splash .bs-mark {
+        width: 72px;
+        height: 72px;
+        object-fit: contain;
+        animation: bs-spin 1.6s ease-in-out infinite;
+      }
+      #boot-splash .bs-name {
+        margin-top: 18px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      #boot-splash .bs-name span {
+        color: #d7f59a;
+        font-weight: 400;
+      }
+      #boot-splash .bs-bar {
+        margin-top: 20px;
+        width: 132px;
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+      #boot-splash .bs-bar i {
+        display: block;
+        width: 40%;
+        height: 100%;
+        border-radius: 999px;
+        background: #d7f59a;
+        animation: bs-slide 1.25s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+      }
+      @keyframes bs-spin {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-4px) scale(1.05);
+        }
+      }
+      @keyframes bs-slide {
+        0% {
+          transform: translateX(-120%);
+        }
+        100% {
+          transform: translateX(320%);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash .bs-mark,
+        #boot-splash .bs-bar i {
+          animation: none;
+        }
+        #boot-splash .bs-bar i {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <div id="boot-splash" role="status" aria-label="Memuat Orbit Studio">
+      <img class="bs-mark" src="/logo-mark.png" alt="" width="72" height="72" />
+      <p class="bs-name">orbit<span>/</span>studio</p>
+      <div class="bs-bar"><i></i></div>
+    </div>
+
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,3 @@
+# SPA fallback untuk hosting statis (Netlify / Cloudflare Pages / Vercel).
+# Semua rute dalam disajikan index.html sehingga `/` dan `/app` bekerja.
+/*    /index.html   200
