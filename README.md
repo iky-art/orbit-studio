@@ -33,7 +33,7 @@ Muncul langsung di layar masuk (mode demo), siap diklik:
 | Owner (admin) | `admin@orbit.studio` | `orbit1234` | sudah onboarding |
 | Anggota | `anggota@orbit.studio` | `orbit1234` | belum onboarding |
 
-Anggota sengaja belum onboarding agar alur 4 langkahnya bisa dicoba; akun ini juga
+Anggota sengaja belum onboarding agar alur 8 langkahnya bisa dicoba; akun ini juga
 ditolak saat membuka `/app/admin`.
 
 ---
@@ -105,7 +105,8 @@ service cloud.firestore {
                     && request.resource.data.get('status', 'aktif') == 'aktif';
       allow update: if signedIn() && request.auth.uid == uid
                     && request.resource.data.diff(resource.data).affectedKeys()
-                         .hasOnly(['name', 'jobTitle', 'goal', 'focus', 'onboarded', 'lastActiveAt']);
+                         .hasOnly(['name', 'jobTitle', 'goal', 'focus', 'onboarded', 'lastActiveAt',
+                                   'dailyTarget', 'termsAcceptedAt', 'termsVersion']);
     }
 
     // Catatan aktivitas (Beranda, Aktivitas, Insights): milik pembuatnya.
@@ -163,7 +164,8 @@ service cloud.firestore {
 ```
 
 > Pengguna biasa hanya boleh mengubah `name`, `jobTitle`, `goal`, `focus`,
-> `onboarded`, dan `lastActiveAt` di dokumen profilnya; `role`, `plan`, dan
+> `onboarded`, `lastActiveAt`, `dailyTarget`, `termsAcceptedAt`, dan
+> `termsVersion` di dokumen profilnya; `role`, `plan`, dan
 > `status` hanya bisa diubah owner/admin. Jika kelak ada field profil baru yang boleh diedit pengguna,
 > tambahkan namanya ke daftar `hasOnly([...])`.
 
@@ -349,7 +351,7 @@ Buat repositori kosong di GitHub (mis. `orbit-studio`), lalu dari folder proyek:
 ```bash
 git init
 git add .
-git commit -m "Orbit Studio v1.0.0"
+git commit -m "Orbit Studio v1.1.0"
 git branch -M main
 git remote add origin https://github.com/<username>/orbit-studio.git
 git push -u origin main
@@ -424,6 +426,14 @@ npx wrangler pages deploy dist --project-name orbit-studio
 | Netlify | `npm run build` | `dist` | `_redirects` langsung terbaca |
 | Vercel | `npm run build` | `dist` | tambahkan `vercel.json` berisi rewrite `/(.*)` → `/index.html` |
 | Firebase Hosting | `npm run build` | `dist` | tambahkan `rewrites` di `firebase.json` (lihat ANDROID.md) |
+
+---
+
+## Riwayat versi
+
+Versi aplikasi ada di `src/version.js` (juga `package.json` dan `VERSION` di
+`public/sw.js`). Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
+Saat menaikkan versi, ubah ketiga tempat itu agar cache PWA ikut diperbarui.
 
 ---
 

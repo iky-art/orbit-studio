@@ -5,6 +5,7 @@ import { WeeklyChart } from '../components/WeeklyChart'
 import { RecentActivity } from '../components/RecentActivity'
 import { FocusBanner } from '../components/FocusBanner'
 import { ActivityComposer } from '../components/ActivityComposer'
+import { DailyTarget } from '../components/DailyTarget'
 import { DataNotice } from '../components/DataNotice'
 import { useDashboard } from '../hooks/useDashboard'
 
@@ -23,6 +24,13 @@ export function HomeView({ onNavigate }) {
     <>
       <Welcome name={user?.name} sub={summary} />
       <DataNotice status={status} error={error} />
+
+      <div className="section">
+        <DailyTarget
+          target={Number(user?.dailyTarget) || 0}
+          hours={week.find((day) => day.today)?.value ?? 0}
+        />
+      </div>
 
       {demo ? null : (
         <div className="section">

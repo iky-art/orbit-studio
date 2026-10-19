@@ -315,7 +315,17 @@ function MyTickets() {
 
 /** Bagian "Bantuan & masukan" di Pengaturan. */
 export function SupportSection() {
+  const { updateProfile } = useAuth()
+  const toast = useToast()
   const [mode, setMode] = useState(null) // 'feedback' | 'ticket' | null
+
+  const replayOnboarding = async () => {
+    try {
+      await updateProfile({ onboarded: false })
+    } catch (error) {
+      toast.error(error.message || 'Gagal membuka panduan awal.')
+    }
+  }
 
   return (
     <section className="surface plan-section" aria-labelledby="support-title">
@@ -338,6 +348,9 @@ export function SupportSection() {
           </button>
           <button type="button" className="btn btn-primary" onClick={() => setMode('ticket')}>
             Buat tiket bantuan
+          </button>
+          <button type="button" className="btn btn-ghost" onClick={replayOnboarding}>
+            Ulangi panduan awal
           </button>
         </div>
       ) : null}

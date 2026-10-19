@@ -1,6 +1,7 @@
 import { Icon } from './Icon'
 import { Link } from '../lib/router'
 import { MODE } from '../firebase/config'
+import { APP_VERSION_SHORT } from '../version'
 import { SETTINGS_COUNT } from '../services/settings'
 
 export function Footer() {
@@ -10,7 +11,7 @@ export function Footer() {
     <footer className="footer">
       <span className="footer-brand">orbit/studio</span>
       <p className="footer-note">
-        {MODE === 'firebase' ? 'Terhubung ke Firebase · real-time' : 'Data demo untuk pratinjau'} · <b>Workbench v1.0</b> · {SETTINGS_COUNT} pengaturan
+        {MODE === 'firebase' ? 'Terhubung ke Firebase · real-time' : 'Data demo untuk pratinjau'} · <b>Workbench v{APP_VERSION_SHORT}</b> · {SETTINGS_COUNT} pengaturan
       </p>
       <Link to="/legal/privacy" className="footer-top">
         Privasi

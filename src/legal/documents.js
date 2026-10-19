@@ -147,7 +147,7 @@ const privacy = {
       body: [
         [
           'Data akun: nama, alamat email, dan kata sandi. Kata sandi dikelola Firebase Authentication milik Google; kami tidak dapat melihat kata sandimu dalam bentuk asli.',
-          'Data profil: peran (member, admin, atau owner), paket, status onboarding, dan tanggal pendaftaran.',
+          'Data profil: peran (member, admin, atau owner), paket, status onboarding, jabatan, tujuan dan fokus kerja, target fokus harian, tanggal pendaftaran, serta waktu dan versi persetujuan Syarat & Privasi yang kamu setujui.',
           'Catatan aktivitas yang kamu buat: jenis, judul, nama proyek (opsional), durasi (opsional), dan waktu pencatatan. Sesi fokus yang selesai di Beranda juga tercatat otomatis sebagai catatan aktivitas.',
           'Data yang tersimpan hanya di perangkatmu: sesi masuk, pengaturan tampilan dan preferensi, serta daftar pesan Broadcast yang sudah kamu tutup (lihat Kebijakan Cookie & Penyimpanan Lokal).',
           'Data teknis: saat kamu masuk atau mengakses database, penyedia infrastruktur (Google Firebase dan penyedia hosting) dapat memproses alamat IP, jenis perangkat, dan log teknis untuk menjalankan serta mengamankan layanan mereka.',

@@ -1,3 +1,4 @@
+import { APP_VERSION } from '../version'
 import { BrandMark } from '../components/BrandMark'
 import { useEffect, useState } from 'react'
 import { Icon } from '../components/Icon'
@@ -237,7 +238,7 @@ function LandingFooter() {
             React dan Vite, tanpa kerangka UI tambahan.
           </p>
           <p className="land-foot-meta">
-            {installed ? 'Versi terpasang' : 'Versi web'} · v1.0.0 ·{' '}
+            {installed ? 'Versi terpasang' : 'Versi web'} · v{APP_VERSION} ·{' '}
             {MODE_LABEL}
           </p>
         </div>

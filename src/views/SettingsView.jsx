@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Icon } from '../components/Icon'
+import { APP_VERSION } from '../version'
 import { PlanSection } from '../components/PlanSection'
 import { SupportSection } from '../components/SupportSection'
 import { ViewHeader } from '../components/ViewHeader'
@@ -14,7 +15,6 @@ import {
   SETTINGS_BY_GROUP,
 } from '../services/settings'
 
-const APPS_VERSION = '1.0.0'
 
 function estimateStorage() {
   const keys = listKeys()
@@ -81,7 +81,7 @@ function SettingRow({ setting }) {
         toast.info('Kunci API dikelola di Admin → Kunci API.')
         break
       case 'about':
-        toast.info(`Orbit Studio Workbench v${APPS_VERSION}`)
+        toast.info(`Orbit Studio Workbench v${APP_VERSION}`)
         break
       case 'licenses':
         toast.info('React, Vite, Firebase — lisensi MIT/Apache 2.0.')
@@ -227,7 +227,7 @@ function SettingRow({ setting }) {
           {setting.action === 'storageUsage'
             ? estimateStorage()
             : setting.action === 'about'
-              ? `v${APPS_VERSION}`
+              ? `v${APP_VERSION}`
               : String(value ?? '—')}
         </span>
       ) : null}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { MODE } from '../../firebase/config'
+import { APP_VERSION, PWA_CACHE } from '../../version'
 import { FLAG_MAINTENANCE } from '../../hooks/useAppStatus'
 import { Icon } from '../../components/Icon'
 import { useCollection } from '../../hooks/useCollection'
@@ -212,8 +213,8 @@ export function SystemPanel() {
           </header>
           <div className="detail-list">
             {[
-              ['Versi aplikasi', 'Workbench 1.0.0'],
-              ['Versi PWA', 'orbit-v2'],
+              ['Versi aplikasi', `Workbench ${APP_VERSION}`],
+              ['Versi PWA', PWA_CACHE],
               ['Lingkungan', MODE === 'firebase' ? 'Produksi · Firebase' : 'Demo'],
               ['Wilayah utama', 'asia-southeast2 (Jakarta)'],
               ['Basis data', MODE === 'firebase' ? 'Cloud Firestore' : 'Mode demo (lokal)'],

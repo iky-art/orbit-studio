@@ -1507,3 +1507,96 @@
     max-height: 70vh;
   }
 }
+
+/* Onboarding: tur fitur, ringkasan, persetujuan */
+.tour-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.tour-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 14px);
+}
+.tour-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.tour-body {
+  flex: 1;
+  min-width: 0;
+}
+.tour-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.tour-text {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+.tour-install {
+  align-items: center;
+}
+.onboard-summary {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.onboard-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: 0.88rem;
+}
+.onboard-summary dt {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.onboard-summary dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+.consent input {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+.consent a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.target-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}

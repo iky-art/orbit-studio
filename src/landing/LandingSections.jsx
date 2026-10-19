@@ -24,8 +24,8 @@ const FLOW = [
   },
   {
     icon: 'target',
-    title: 'Onboarding 4 langkah',
-    text: 'Peran, gaya kerja, tema, dan preferensi notifikasi disimpan ke profilmu.',
+    title: 'Onboarding 8 langkah',
+    text: 'Tujuan, fokus, target harian, tampilan, tur fitur, notifikasi, dan persetujuan, semuanya dalam beberapa menit.',
   },
   {
     icon: 'grid',

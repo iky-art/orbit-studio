@@ -61,6 +61,7 @@ async function demoSignIn(email, password) {
     role: found.role ?? 'member',
     plan: found.plan ?? 'Free',
     onboarded: Boolean(found.onboarded),
+    dailyTarget: Number(found.dailyTarget) || 0,
     createdAt: found.createdAt ?? new Date().toISOString(),
   }
   writeJSON('session', session)
@@ -140,6 +141,7 @@ function profileFromDoc(uid, data, fallbackEmail) {
     role: data?.role ?? 'member',
     plan: data?.plan ?? 'Free',
     onboarded: Boolean(data?.onboarded),
+    dailyTarget: Number(data?.dailyTarget) || 0,
     createdAt: data?.createdAt ?? new Date().toISOString(),
   }
 }
