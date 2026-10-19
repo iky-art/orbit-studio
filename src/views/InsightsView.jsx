@@ -1,10 +1,11 @@
+import { Icon } from '../components/Icon'
 import { ViewHeader } from '../components/ViewHeader'
 import { WeeklyChart } from '../components/WeeklyChart'
 import { DataNotice } from '../components/DataNotice'
 import { useDashboard } from '../hooks/useDashboard'
 
 export function InsightsView() {
-  const { status, error, week, insights } = useDashboard()
+  const { status, error, week, insights, badges } = useDashboard()
 
   return (
     <>
@@ -47,6 +48,38 @@ export function InsightsView() {
           )}
         </article>
       </div>
+
+      {badges?.length ? (
+        <section className="surface badge-section section" aria-labelledby="badge-title">
+          <div className="section-head">
+            <div>
+              <h2 className="card-title" id="badge-title">
+                Lencana
+              </h2>
+              <p className="card-sub">
+                {badges.filter((item) => item.earned).length} dari {badges.length} diraih
+              </p>
+            </div>
+          </div>
+          <ul className="badge-grid">
+            {badges.map((item) => (
+              <li
+                key={item.id}
+                className="badge-item"
+                data-earned={item.earned ? 'true' : undefined}
+              >
+                <span className="badge-mark" aria-hidden="true">
+                  <Icon name={item.icon} size={18} />
+                </span>
+                <span className="badge-text">
+                  <b>{item.label}</b>
+                  <small>{item.earned ? 'Diraih' : `${item.value} / ${item.goal} · ${item.desc}`}</small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </>
   )
 }

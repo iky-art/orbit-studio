@@ -13,6 +13,9 @@ export function Footer() {
       <p className="footer-note">
         {MODE === 'firebase' ? 'Terhubung ke Firebase · real-time' : 'Data demo untuk pratinjau'} · <b>Workbench v{APP_VERSION_SHORT}</b> · {SETTINGS_COUNT} pengaturan
       </p>
+      <Link to="/help" className="footer-top">
+        Bantuan
+      </Link>
       <Link to="/legal/privacy" className="footer-top">
         Privasi
       </Link>

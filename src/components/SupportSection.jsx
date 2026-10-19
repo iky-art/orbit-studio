@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Icon } from './Icon'
 import { formatRelative } from '../lib/format'
+import { Link } from '../lib/router'
 import { create, DEMO_MODE, subscribeWhere, update } from '../services/db'
 import { useAuth } from '../providers/AuthProvider'
 import { useToast } from '../providers/ToastProvider'
@@ -349,6 +350,9 @@ export function SupportSection() {
           <button type="button" className="btn btn-primary" onClick={() => setMode('ticket')}>
             Buat tiket bantuan
           </button>
+          <Link to="/help" className="btn btn-ghost">
+            Pusat Bantuan
+          </Link>
           <button type="button" className="btn btn-ghost" onClick={replayOnboarding}>
             Ulangi panduan awal
           </button>

@@ -1,5 +1,28 @@
 # Riwayat versi
 
+## 1.2.0 — 20 Oktober 2026
+
+### Baru
+- **Login dengan Google** dan **verifikasi email** untuk akun email/kata sandi
+  (banner dengan tombol kirim ulang dan "Sudah verifikasi").
+- **Data & privasi**: unduh semua data akun sebagai JSON dan hapus akun mandiri
+  (konfirmasi ulang kata sandi atau Google, serta ketik HAPUS).
+- **Tim dan Undangan**: buat tim di Pengaturan → Tim, undang lewat email, atur
+  peran (pemilik, admin, anggota), dan jawab undangan dari lonceng notifikasi.
+  Panel admin Tim dan Undangan menampilkan data nyata.
+- **Pusat Bantuan** di `/help` (pencarian, kategori, artikel) dari panel Konten.
+  Panel admin kini punya tombol **Ubah** pada Konten dan Paket.
+- **Timer fokus lengkap**: istirahat pendek/panjang, siklus, mulai otomatis,
+  bunyi, getaran, notifikasi sistem, tetap akurat di latar belakang, dan
+  mengikuti Pengaturan → Produktivitas. Durasi bawaan 25/5 menit.
+- **Lencana** di Insights (sesi, jam fokus, rentetan hari).
+
+### Catatan upgrade
+- **Perbarui Rules Firestore** (README): koleksi baru `teams`, `memberships`,
+  `invitations`, aturan hapus akun, dan baca artikel `content` yang terbit.
+- Aktifkan **Google** di Firebase → Authentication → Sign-in method.
+- Cache PWA naik ke `orbit-v4`.
+
 ## 1.1.0 — 19 Oktober 2026
 
 ### Baru

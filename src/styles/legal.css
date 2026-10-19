@@ -177,3 +177,38 @@ html {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* Pusat Bantuan */
+.help-search {
+  margin: 0 0 var(--space-4);
+}
+.help-list {
+  margin-top: var(--space-4);
+}
+.help-body h2,
+.help-body h3,
+.help-body h4 {
+  margin: var(--space-5) 0 var(--space-3);
+}
+.help-body code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  font-size: 0.88em;
+}
+.help-body ol {
+  margin: 0 0 var(--space-3);
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.help-cta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+.help-cta a,
+.legal-eyebrow a {
+  color: var(--accent);
+}

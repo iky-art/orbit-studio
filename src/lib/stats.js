@@ -37,6 +37,20 @@ function delta(cur, prev) {
   return round1(((cur - prev) / prev) * 100)
 }
 
+const BADGES = [
+  { id: 'first', label: 'Langkah pertama', desc: 'Selesaikan 1 sesi fokus', icon: 'flame', kind: 'sessions', goal: 1 },
+  { id: 's10', label: '10 sesi', desc: 'Selesaikan 10 sesi fokus', icon: 'flame', kind: 'sessions', goal: 10 },
+  { id: 's50', label: '50 sesi', desc: 'Selesaikan 50 sesi fokus', icon: 'flame', kind: 'sessions', goal: 50 },
+  { id: 's100', label: '100 sesi', desc: 'Selesaikan 100 sesi fokus', icon: 'flame', kind: 'sessions', goal: 100 },
+  { id: 'h10', label: '10 jam fokus', desc: 'Kumpulkan 10 jam fokus', icon: 'zap', kind: 'hours', goal: 10 },
+  { id: 'h50', label: '50 jam fokus', desc: 'Kumpulkan 50 jam fokus', icon: 'zap', kind: 'hours', goal: 50 },
+  { id: 'h100', label: '100 jam fokus', desc: 'Kumpulkan 100 jam fokus', icon: 'zap', kind: 'hours', goal: 100 },
+  { id: 'st3', label: 'Rentetan 3 hari', desc: 'Fokus 3 hari berturut-turut', icon: 'target', kind: 'streak', goal: 3 },
+  { id: 'st7', label: 'Rentetan 7 hari', desc: 'Fokus 7 hari berturut-turut', icon: 'target', kind: 'streak', goal: 7 },
+  { id: 'st14', label: 'Rentetan 14 hari', desc: 'Fokus 14 hari berturut-turut', icon: 'target', kind: 'streak', goal: 14 },
+  { id: 'st30', label: 'Rentetan 30 hari', desc: 'Fokus 30 hari berturut-turut', icon: 'target', kind: 'streak', goal: 30 },
+]
+
 export function computeDashboard(rows, now = new Date()) {
   const today0 = startOfDay(now)
   const logs = rows
@@ -221,5 +235,21 @@ export function computeDashboard(rows, now = new Date()) {
     ? `Minggu ini: ${nf.format(hoursNow)} jam fokus dari ${weekCount} aktivitas.`
     : 'Belum ada aktivitas. Mulai sesi fokus atau catat aktivitas pertamamu.'
 
-  return { items, metrics, week, insights: { tiles, breakdown }, summary, total: logs.length }
+  const focusLogs = logs.filter((l) => l.type === 'focus')
+  const totals = {
+    sessions: focusLogs.length,
+    hours: round1(focusLogs.reduce((n, l) => n + l.minutes, 0) / 60),
+    streak: longest,
+  }
+  const badges = BADGES.map((badge) => {
+    const value = totals[badge.kind]
+    return {
+      ...badge,
+      value,
+      earned: value >= badge.goal,
+      progress: Math.min(100, Math.round((value / badge.goal) * 100)),
+    }
+  })
+
+  return { items, metrics, week, insights: { tiles, breakdown }, summary, total: logs.length, badges }
 }

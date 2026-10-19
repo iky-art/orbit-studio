@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Icon } from '../components/Icon'
+import { MODE } from '../firebase/config'
+import { downloadJson } from '../lib/download'
 import { APP_VERSION } from '../version'
 import { PlanSection } from '../components/PlanSection'
+import { PrivacySection } from '../components/PrivacySection'
 import { SupportSection } from '../components/SupportSection'
+import { TeamSection } from '../components/TeamSection'
 import { ViewHeader } from '../components/ViewHeader'
 import { useAuth } from '../providers/AuthProvider'
 import { useSettings } from '../providers/SettingsProvider'
@@ -34,7 +38,7 @@ function estimateStorage() {
 function SettingRow({ setting }) {
   const { values, setValue } = useSettings()
   const toast = useToast()
-  const { user, updateProfile } = useAuth()
+  const { user, updateProfile, exportMyData } = useAuth()
   const value = values[setting.id]
 
   const runAction = async () => {
@@ -46,6 +50,15 @@ function SettingRow({ setting }) {
         toast.success('Cache dibersihkan. Data dimuat ulang saat dibuka.')
         break
       case 'exportData': {
+        if (MODE === 'firebase') {
+          exportMyData()
+            .then((data) => {
+              downloadJson(`orbit-data-${new Date().toISOString().slice(0, 10)}.json`, data)
+              toast.success('Data akunmu diekspor sebagai JSON.')
+            })
+            .catch((error) => toast.error(error.message || 'Gagal mengekspor data.'))
+          break
+        }
         const payload = {}
         listKeys().forEach((key) => {
           try {
@@ -271,7 +284,15 @@ export function SettingsView() {
       </div>
 
       <div className="section">
+        <TeamSection />
+      </div>
+
+      <div className="section">
         <SupportSection />
+      </div>
+
+      <div className="section">
+        <PrivacySection />
       </div>
 
       <div className="settings-search">

@@ -44,6 +44,7 @@ export function EntityPanel({ schema }) {
   const [selected, setSelected] = useState([])
   const [active, setActive] = useState(null)
   const [creating, setCreating] = useState(false)
+  const [editing, setEditing] = useState(null)
   const [draft, setDraft] = useState({})
   const [pending, setPending] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -144,6 +145,57 @@ export function EntityPanel({ schema }) {
       setCreating(false)
       setDraft({})
       setPage(1)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const closeForm = () => {
+    setCreating(false)
+    setEditing(null)
+    setDraft({})
+  }
+
+  const openEdit = (row) => {
+    const next = {}
+    ;(schema.createFields ?? []).forEach((field) => {
+      const value = row[field.key]
+      next[field.key] = field.format
+        ? field.format(value)
+        : Array.isArray(value)
+          ? value.join('\n')
+          : (value ?? '')
+    })
+    setDraft(next)
+    setActive(null)
+    setEditing(row)
+  }
+
+  const submitEdit = async () => {
+    const missing = (schema.createFields ?? [])
+      .filter((field) => field.required)
+      .find((field) => !String(draft[field.key] ?? '').trim())
+    if (missing) {
+      toast.error(`${missing.label} wajib diisi.`)
+      return
+    }
+    setBusy(true)
+    try {
+      const changes = {}
+      ;(schema.createFields ?? []).forEach((field) => {
+        const raw = draft[field.key] ?? ''
+        changes[field.key] = field.parse
+          ? field.parse(raw)
+          : field.type === 'number'
+            ? Number(raw) || 0
+            : raw
+      })
+      changes.updatedAt = new Date().toISOString()
+      await patch(editing.id, changes)
+      toast.success('Perubahan disimpan.')
+      closeForm()
+    } catch (error) {
+      toast.error(error?.message || 'Gagal menyimpan perubahan.')
     } finally {
       setBusy(false)
     }
@@ -357,6 +409,12 @@ export function EntityPanel({ schema }) {
         footer={
           active ? (
             <div className="drawer-actions">
+              {schema.editable ? (
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => openEdit(active)}>
+                  <Icon name="edit" size={15} />
+                  Ubah
+                </button>
+              ) : null}
               {(schema.rowActions ?? []).map((action) => (
                 <button
                   key={action.id}
@@ -407,16 +465,16 @@ export function EntityPanel({ schema }) {
       </Drawer>
 
       <Drawer
-        open={creating}
-        onClose={() => setCreating(false)}
-        title={schema.createLabel ?? 'Tambah data'}
+        open={creating || Boolean(editing)}
+        onClose={closeForm}
+        title={editing ? 'Ubah data' : (schema.createLabel ?? 'Tambah data')}
         subtitle="Isi kolom bertanda wajib, lalu simpan."
         footer={
           <div className="drawer-actions">
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setCreating(false)}>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={closeForm}>
               Batal
             </button>
-            <button type="button" className="btn btn-primary btn-sm" onClick={submitCreate} disabled={busy}>
+            <button type="button" className="btn btn-primary btn-sm" onClick={editing ? submitEdit : submitCreate} disabled={busy}>
               {busy ? <span className="btn-spinner" aria-hidden="true" /> : <Icon name="check" size={16} strokeWidth={2.1} />}
               Simpan
             </button>
@@ -445,7 +503,7 @@ export function EntityPanel({ schema }) {
               ) : field.type === 'textarea' ? (
                 <textarea
                   className="field-input"
-                  rows={3}
+                  rows={field.rows ?? 3}
                   value={draft[field.key] ?? ''}
                   onChange={(event) => setDraft((current) => ({ ...current, [field.key]: event.target.value }))}
                   placeholder={field.placeholder}

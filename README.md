@@ -78,6 +78,9 @@ Pakai ini kalau kamu ingin login sungguhan dan data tersimpan di cloud
 ### 2. Aktifkan layanan
 
 - **Authentication → Get started → Sign-in method → Email/Password → Enable.**
+- **Sign-in method → Google → Enable** (isi email dukungan proyek). Tanpa ini tombol
+  "Lanjut dengan Google" menampilkan pesan galat. Email verifikasi untuk akun
+  email/kata sandi dikirim otomatis oleh Firebase.
 - **Firestore Database → Create database** → pilih lokasi (mis.
   `asia-southeast2` Jakarta) → mulai dengan *production mode*.
 - **Firestore → Rules** → tempel aturan berikut lalu **Publish**:
@@ -95,6 +98,19 @@ service cloud.firestore {
       return signedIn()
         && get(/databases/$(db)/documents/users/$(request.auth.uid)).data.get('status', 'aktif') != 'nonaktif';
     }
+    function myEmail() {
+      return request.auth.token.email.lower();
+    }
+    function isMember(teamId) {
+      return signedIn()
+        && exists(/databases/$(db)/documents/memberships/$(teamId + '_' + request.auth.uid));
+    }
+    function memberRole(teamId) {
+      return get(/databases/$(db)/documents/memberships/$(teamId + '_' + request.auth.uid)).data.role;
+    }
+    function isTeamAdmin(teamId) {
+      return isMember(teamId) && memberRole(teamId) in ['owner', 'admin'];
+    }
 
     // Profil: hanya pemiliknya. Peran, paket, dan status hanya bisa diubah admin.
     match /users/{uid} {
@@ -107,6 +123,9 @@ service cloud.firestore {
                     && request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['name', 'jobTitle', 'goal', 'focus', 'onboarded', 'lastActiveAt',
                                    'dailyTarget', 'termsAcceptedAt', 'termsVersion']);
+      // Hapus akun mandiri (khusus member; owner/admin lewat konsol admin).
+      allow delete: if signedIn() && request.auth.uid == uid
+                    && resource.data.get('role', 'member') == 'member';
     }
 
     // Catatan aktivitas (Beranda, Aktivitas, Insights): milik pembuatnya.
@@ -117,16 +136,17 @@ service cloud.firestore {
                     && request.resource.data.uid == resource.data.uid;
     }
 
-    // Masukan dari pengguna: boleh dikirim, hanya admin yang membaca.
+    // Masukan: pengguna mengirim dan boleh melihat/menghapus miliknya (ekspor & hapus akun).
     match /feedback/{id} {
       allow create: if isActive() && request.resource.data.uid == request.auth.uid
                     && request.resource.data.status == 'baru'
                     && request.resource.data.votes == 0;
+      allow read, delete: if isActive() && resource.data.uid == request.auth.uid;
     }
 
-    // Tiket bantuan: pengguna membuat, membaca, dan membalas tiketnya sendiri.
+    // Tiket bantuan: pengguna membuat, membaca, membalas, dan menghapus tiketnya sendiri.
     match /tickets/{id} {
-      allow read: if isActive() && resource.data.uid == request.auth.uid;
+      allow read, delete: if isActive() && resource.data.uid == request.auth.uid;
       allow create: if isActive() && request.resource.data.uid == request.auth.uid
                     && request.resource.data.status == 'terbuka';
       allow update: if isActive() && resource.data.uid == request.auth.uid
@@ -135,7 +155,62 @@ service cloud.firestore {
                     && request.resource.data.status in ['terbuka', 'ditutup'];
     }
 
-    // Publik: paket & harga (landing), flag, dan status layanan (pemeliharaan, banner).
+    // Tim: dibaca anggota; dibuat/diubah/dihapus pemiliknya.
+    match /teams/{teamId} {
+      allow read: if isMember(teamId);
+      allow create: if isActive() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isActive() && resource.data.ownerUid == request.auth.uid
+                    && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow delete: if isActive() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Keanggotaan: id dokumen = teamId_uid. Pemilik membuat dirinya sendiri; anggota
+    // lain bergabung hanya dengan undangan yang menunggu untuk emailnya.
+    match /memberships/{mid} {
+      allow read: if isActive()
+                  && (resource.data.uid == request.auth.uid || isMember(resource.data.teamId));
+      allow create: if isActive()
+                    && mid == request.resource.data.teamId + '_' + request.auth.uid
+                    && request.resource.data.uid == request.auth.uid
+                    && (
+                      (request.resource.data.role == 'owner'
+                        && get(/databases/$(db)/documents/teams/$(request.resource.data.teamId)).data.ownerUid == request.auth.uid)
+                      || (request.resource.data.role in ['admin', 'member']
+                        && get(/databases/$(db)/documents/invitations/$(request.resource.data.inviteId)).data.teamId == request.resource.data.teamId
+                        && get(/databases/$(db)/documents/invitations/$(request.resource.data.inviteId)).data.email == myEmail()
+                        && get(/databases/$(db)/documents/invitations/$(request.resource.data.inviteId)).data.status == 'tertunda'
+                        && get(/databases/$(db)/documents/invitations/$(request.resource.data.inviteId)).data.role == request.resource.data.role)
+                    );
+      allow update: if isActive()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+                    && resource.data.role != 'owner'
+                    && request.resource.data.role in ['admin', 'member']
+                    && memberRole(resource.data.teamId) == 'owner';
+      allow delete: if isActive()
+                    && (resource.data.uid == request.auth.uid
+                        || (isMember(resource.data.teamId) && resource.data.role != 'owner'
+                            && (memberRole(resource.data.teamId) == 'owner'
+                                || (memberRole(resource.data.teamId) == 'admin' && resource.data.role == 'member'))));
+    }
+
+    // Undangan: dibuat admin tim; dibaca penerima (email cocok) dan admin tim;
+    // penerima hanya boleh menjawab (status).
+    match /invitations/{iid} {
+      allow read: if isActive()
+                  && (resource.data.email == myEmail() || isTeamAdmin(resource.data.teamId));
+      allow create: if isActive() && isTeamAdmin(request.resource.data.teamId)
+                    && request.resource.data.invitedByUid == request.auth.uid
+                    && request.resource.data.status == 'tertunda'
+                    && (request.resource.data.role == 'member'
+                        || (request.resource.data.role == 'admin'
+                            && memberRole(request.resource.data.teamId) == 'owner'));
+      allow update: if isActive() && resource.data.email == myEmail()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt'])
+                    && request.resource.data.status in ['diterima', 'ditolak'];
+      allow delete: if isActive() && isTeamAdmin(resource.data.teamId);
+    }
+
+    // Publik: paket & harga, flag, status layanan, dan artikel Pusat Bantuan yang terbit.
     match /plans/{id} {
       allow read: if true;
     }
@@ -144,6 +219,9 @@ service cloud.firestore {
     }
     match /systemServices/{id} {
       allow read: if true;
+    }
+    match /content/{id} {
+      allow read: if resource.data.status == 'terbit';
     }
 
     // Pengguna yang masuk: broadcast dan pengumuman yang sudah terbit.
@@ -277,8 +355,10 @@ Setiap panel punya salah satu status ini di **mode Firebase**:
 | Status Sistem | Nyata | Status layanan yang kamu ubah tampil sebagai banner ke pengguna; **Mode pemeliharaan** menampilkan halaman pemeliharaan ke non-admin |
 | Feature Flag | Sebagian | Hanya kunci `mode.pemeliharaan` dan `pendaftaran.tutup` yang dikenali kode; flag lain tersimpan tetapi belum dipakai. Penutupan pendaftaran hanya di antarmuka (Firebase Auth tetap menerima pendaftaran dari luar) |
 | Jejak Audit | Nyata | Otomatis mencatat setiap buat/ubah/hapus dari panel admin |
-| Konten, Media, Kategori & Tag, Moderasi, Bahasa | Tersimpan | Belum ada layar pengguna yang menampilkan |
-| Tim, Undangan, Peran & Izin | Tersimpan | Belum ada fitur tim; hak akses nyata hanya `owner`/`admin` vs `member` |
+| Konten | Nyata | Artikel berstatus **terbit** dan berisi tampil di Pusat Bantuan `/help` (bisa diubah lewat tombol Ubah) |
+| Media, Kategori & Tag, Moderasi, Bahasa | Tersimpan | Belum ada layar pengguna yang menampilkan |
+| Tim, Undangan | Nyata | Pengguna membuat tim di Pengaturan → Tim, mengundang lewat email, dan menjawab undangan di lonceng. Panel admin menampilkan semuanya |
+| Peran & Izin | Tersimpan | Hak akses nyata hanya `owner`/`admin` vs `member`; peran dalam tim: pemilik, admin, anggota |
 | Notifikasi, Laporan | Tersimpan | Pakai Pengumuman/Broadcast untuk pesan ke pengguna |
 | Langganan, Faktur, Transaksi, Kupon | Butuh backend | Perlu payment gateway (mis. Midtrans/Xendit) dan server |
 | Kunci API, Webhook, Integrasi | Butuh backend | Perlu server untuk memvalidasi kunci dan memanggil layanan luar |

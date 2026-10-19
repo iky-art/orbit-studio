@@ -38,6 +38,12 @@ export function AuthProvider({ children }) {
     return next
   }, [])
 
+  const signInWithGoogle = useCallback(async () => {
+    const next = await authService.signInWithGoogle()
+    setSession(next)
+    return next
+  }, [])
+
   const signOut = useCallback(async () => {
     await authService.signOut()
     setSession(null)
@@ -59,11 +65,16 @@ export function AuthProvider({ children }) {
       onboarded: Boolean(session?.onboarded),
       signIn,
       signUp,
+      signInWithGoogle,
       signOut,
       updateProfile,
       resetPassword: authService.resetPassword,
+      sendVerification: authService.sendVerification,
+      refreshVerification: authService.refreshVerification,
+      exportMyData: authService.exportMyData,
+      deleteAccount: authService.deleteAccount,
     }),
-    [session, booting, signIn, signUp, signOut, updateProfile],
+    [session, booting, signIn, signUp, signInWithGoogle, signOut, updateProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

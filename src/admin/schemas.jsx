@@ -135,17 +135,22 @@ export const SCHEMAS = {
     filters: [statusFilter(['publik', 'privat'])],
     stats: (rows) => [
       { label: 'Total tim', value: rows.length },
-      { label: 'Total anggota', value: rows.reduce((sum, r) => sum + r.members, 0) },
+      { label: 'Total anggota', value: rows.reduce((sum, r) => sum + (r.members || 0), 0) },
       { label: 'Tim publik', value: rows.filter((r) => r.visibility === 'publik').length },
     ],
-    columns: [text('name', 'Tim', { primary: true }), text('lead', 'Ketua', { muted: true }), num('members', 'Anggota'), num('projects', 'Proyek'), badge('visibility', 'Visibilitas'), rel('createdAt', 'Dibuat')],
-    detailFields: [text('lead', 'Ketua tim'), num('members', 'Anggota'), num('projects', 'Proyek'), { key: 'visibility', label: 'Visibilitas', badge: true }, rel('createdAt', 'Dibuat')],
+    columns: MODE === 'firebase'
+      ? [text('name', 'Tim', { primary: true }), text('lead', 'Pemilik', { muted: true }), badge('visibility', 'Visibilitas'), rel('createdAt', 'Dibuat')]
+      : [text('name', 'Tim', { primary: true }), text('lead', 'Ketua', { muted: true }), num('members', 'Anggota'), num('projects', 'Proyek'), badge('visibility', 'Visibilitas'), rel('createdAt', 'Dibuat')],
+    detailFields: MODE === 'firebase'
+      ? [text('lead', 'Pemilik'), { key: 'visibility', label: 'Visibilitas', badge: true }, rel('createdAt', 'Dibuat')]
+      : [text('lead', 'Ketua tim'), num('members', 'Anggota'), num('projects', 'Proyek'), { key: 'visibility', label: 'Visibilitas', badge: true }, rel('createdAt', 'Dibuat')],
     rowActions: [
       { id: 'members', label: 'Kelola anggota', icon: 'users' },
       { id: 'archive', label: 'Arsipkan tim', icon: 'archive', tone: 'danger', patch: { visibility: 'privat' }, success: 'Tim diarsipkan.' },
-    ],
-    createLabel: 'Tim baru',
-    createFields: [
+    ].filter((action) => MODE !== 'firebase' || action.id !== 'members'),
+    // Mode Firebase: tim dibuat pengguna dari Pengaturan → Tim.
+    createLabel: MODE === 'firebase' ? undefined : 'Tim baru',
+    createFields: MODE === 'firebase' ? undefined : [
       { key: 'name', label: 'Nama tim', required: true, placeholder: 'Nama tim' },
       { key: 'lead', label: 'Ketua', placeholder: 'Nama ketua' },
       { key: 'visibility', label: 'Visibilitas', type: 'select', options: ['publik', 'privat'] },
@@ -163,11 +168,11 @@ export const SCHEMAS = {
     title: 'Undangan',
     searchKeys: ['email', 'invitedBy'],
     searchPlaceholder: 'Cari email…',
-    filters: [statusFilter(['terkirim', 'dibuka', 'diterima', 'kedaluwarsa']), { key: 'role', label: 'Peran', options: ['Admin', 'Editor', 'Member', 'Analis'] }],
+    filters: [statusFilter(['tertunda', 'terkirim', 'dibuka', 'diterima', 'ditolak', 'kedaluwarsa']), { key: 'role', label: 'Peran', options: MODE === 'firebase' ? ['admin', 'member'] : ['Admin', 'Editor', 'Member', 'Analis'] }],
     primaryKey: 'email',
     stats: (rows) => [
       { label: 'Total undangan', value: rows.length },
-      { label: 'Menunggu', value: rows.filter((r) => ['terkirim', 'dibuka'].includes(r.status)).length },
+      { label: 'Menunggu', value: rows.filter((r) => ['tertunda', 'terkirim', 'dibuka'].includes(r.status)).length },
       { label: 'Diterima', value: rows.filter((r) => r.status === 'diterima').length },
     ],
     columns: [text('email', 'Email', { primary: true }), badge('role', 'Peran'), text('invitedBy', 'Diundang oleh', { muted: true }), badge('status', 'Status'), rel('sentAt', 'Dikirim'), rel('expiresAt', 'Kedaluwarsa')],
@@ -176,9 +181,10 @@ export const SCHEMAS = {
       { id: 'resend', label: 'Kirim ulang', icon: 'send' },
       { id: 'copy', label: 'Salin tautan', icon: 'copy' },
       { id: 'revoke', label: 'Batalkan', icon: 'close', tone: 'danger', patch: { status: 'kedaluwarsa' }, success: 'Undangan dibatalkan.' },
-    ],
-    createLabel: 'Undang lewat email',
-    createFields: [
+    ].filter((action) => MODE !== 'firebase' || !['resend', 'copy'].includes(action.id)),
+    // Mode Firebase: undangan dibuat dari Pengaturan → Tim (butuh tim tujuan).
+    createLabel: MODE === 'firebase' ? undefined : 'Undang lewat email',
+    createFields: MODE === 'firebase' ? undefined : [
       { key: 'email', label: 'Email', type: 'email', required: true, placeholder: 'nama@contoh.id' },
       { key: 'role', label: 'Peran', type: 'select', options: ['Admin', 'Editor', 'Member', 'Analis'] },
     ],
@@ -216,6 +222,7 @@ export const SCHEMAS = {
     group: 'konten',
     blurb: 'Artikel, halaman, dan catatan rilis.',
     collection: 'content',
+    editable: true,
     eyebrow: 'Konten',
     title: 'Semua konten',
     searchKeys: ['title', 'author', 'type'],
@@ -228,9 +235,10 @@ export const SCHEMAS = {
       { label: 'Total dibaca', value: new Intl.NumberFormat('id-ID').format(rows.reduce((s, r) => s + r.views, 0)) },
     ],
     columns: [text('title', 'Judul', { primary: true }), badge('type', 'Jenis'), text('author', 'Penulis', { muted: true }), badge('status', 'Status'), num('views', 'Dibaca'), rel('updatedAt', 'Diperbarui')],
-    detailFields: [text('author', 'Penulis'), { key: 'type', label: 'Jenis', badge: true }, { key: 'status', label: 'Status', badge: true }, num('views', 'Dibaca'), text('locale', 'Bahasa'), dt('updatedAt', 'Diperbarui')],
+    detailFields: [text('author', 'Penulis'), { key: 'type', label: 'Jenis', badge: true }, text('category', 'Kategori'), text('slug', 'Slug (alamat)'), { key: 'status', label: 'Status', badge: true }, num('views', 'Dibaca'), text('locale', 'Bahasa'), dt('updatedAt', 'Diperbarui')],
     rowActions: [
       { id: 'publish', label: 'Terbitkan', icon: 'send', patch: { status: 'terbit' }, success: 'Konten diterbitkan.' },
+      { id: 'unpublish', label: 'Jadikan draf', icon: 'pause', patch: { status: 'draf' }, success: 'Konten ditarik jadi draf.' },
       { id: 'review', label: 'Kirim ke tinjauan', icon: 'eye', patch: { status: 'tinjauan' }, success: 'Dikirim ke tinjauan.' },
       { id: 'delete', label: 'Hapus', icon: 'trash', tone: 'danger', effect: 'delete' },
     ],
@@ -238,6 +246,10 @@ export const SCHEMAS = {
     createFields: [
       { key: 'title', label: 'Judul', required: true, placeholder: 'Judul konten' },
       { key: 'type', label: 'Jenis', type: 'select', options: ['artikel', 'halaman', 'catatan rilis', 'panduan'] },
+      { key: 'category', label: 'Kategori (Pusat Bantuan)', placeholder: 'Mis. Memulai, Akun, Tim' },
+      { key: 'slug', label: 'Slug (alamat, opsional)', placeholder: 'otomatis dari judul' },
+      { key: 'excerpt', label: 'Ringkasan', type: 'textarea', rows: 2, placeholder: 'Satu dua kalimat yang tampil di daftar' },
+      { key: 'body', label: 'Isi (mendukung # judul, - daftar, **tebal**, [tautan](https://...))', type: 'textarea', rows: 10, placeholder: '## Langkah 1\nJelaskan di sini.' },
       { key: 'author', label: 'Penulis', placeholder: 'Nama penulis' },
       { key: 'locale', label: 'Bahasa', type: 'select', options: ['id', 'en'] },
     ],
@@ -305,6 +317,7 @@ export const SCHEMAS = {
     group: 'komersial',
     blurb: 'Paket langganan, harga, dan fitur.',
     collection: 'plans',
+    editable: true,
     eyebrow: 'Komersial',
     title: 'Paket & harga',
     searchKeys: ['name'],

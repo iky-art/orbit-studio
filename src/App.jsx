@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Icon } from './components/Icon'
 import { Link, useRouter } from './lib/router'
 import { LandingPage } from './landing/LandingPage'
+import { HelpPage } from './help/HelpPage'
 import { LegalPage } from './legal/LegalPage'
 import { getLegalTitle } from './legal/documents'
 import { OrbitApp } from './screens/OrbitApp'
@@ -46,6 +47,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    if (path === '/help' || path.startsWith('/help/')) return // judul diatur HelpPage
     if (path === '/legal' || path.startsWith('/legal/')) {
       document.title = getLegalTitle(path)
       return
@@ -57,6 +59,7 @@ export default function App() {
 
   if (path === '/') return <LandingPage />
   if (path === '/app' || path.startsWith('/app/')) return <OrbitApp />
+  if (path === '/help' || path.startsWith('/help/')) return <HelpPage path={path} />
   if (path === '/legal' || path.startsWith('/legal/')) return <LegalPage path={path} />
   return <NotFoundScreen path={path} />
 }

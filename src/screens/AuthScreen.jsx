@@ -24,7 +24,7 @@ function fieldError(name, value, extra = {}) {
 }
 
 export function AuthScreen() {
-  const { signIn, signUp, resetPassword } = useAuth()
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth()
   const { maintenance, signupClosed } = useAppStatus()
   const toast = useToast()
 
@@ -53,6 +53,20 @@ export function AuthScreen() {
     })
     setErrors(next)
     return Object.keys(next).length === 0
+  }
+
+  const onGoogle = async () => {
+    if (busy) return
+    setBusy(true)
+    setErrors({})
+    try {
+      const next = await signInWithGoogle()
+      toast.success(`Selamat datang, ${next.name.split(' ')[0]}.`)
+    } catch (error) {
+      setErrors({ form: error.message })
+    } finally {
+      setBusy(false)
+    }
   }
 
   const submit = async (event) => {
@@ -277,6 +291,23 @@ export function AuthScreen() {
                   ? 'Masuk'
                   : 'Buat akun'}
           </button>
+
+          {MODE === 'firebase' && !forgot && !signupClosed ? (
+            <>
+              <div className="auth-or" aria-hidden="true">
+                <span>atau</span>
+              </div>
+              <button
+                type="button"
+                className="btn btn-ghost btn-block"
+                onClick={onGoogle}
+                disabled={busy}
+              >
+                <Icon name="globe" size={18} />
+                Lanjut dengan Google
+              </button>
+            </>
+          ) : null}
 
           {mode !== 'login' && !forgot ? (
             <p className="auth-legal">

@@ -1600,3 +1600,141 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
 }
+
+/* Pemisah "atau" dan zona bahaya */
+.auth-or {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.auth-or::before,
+.auth-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.danger-zone {
+  padding: var(--space-4);
+  border: 1px solid var(--danger, #f0a98f);
+  border-radius: var(--r-sm, 14px);
+}
+
+/* Timer fokus lengkap + lencana */
+.focus-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--space-3);
+}
+.focus-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: var(--space-3);
+}
+.focus-dots span {
+  width: 18px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+}
+.focus-dots span[data-done='true'] {
+  background: var(--accent);
+}
+.badge-section {
+  padding: var(--space-5);
+}
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 14px);
+  opacity: 0.55;
+}
+.badge-item[data-earned='true'] {
+  opacity: 1;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.badge-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.06));
+  color: var(--accent);
+}
+.badge-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+.badge-text small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+/* Tim */
+.team-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+.team-members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.team-member {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+.team-member:first-child {
+  border-top: 0;
+}
+.team-member-body {
+  flex: 1;
+  min-width: 140px;
+}
+.team-member-name {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.team-member-mail {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.team-member-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

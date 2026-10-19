@@ -38,11 +38,11 @@ const THEMES = [
 ]
 
 const TOUR = [
-  { icon: 'home', title: 'Beranda', text: 'Catat aktivitas dan jalankan timer fokus 25 menit. Sesi yang selesai tercatat otomatis.' },
+  { icon: 'home', title: 'Beranda', text: 'Catat aktivitas dan jalankan timer fokus (durasinya bisa diatur). Sesi yang selesai tercatat otomatis.' },
   { icon: 'activity', title: 'Aktivitas', text: 'Riwayat semua catatanmu, bisa disaring per jenis.' },
   { icon: 'insights', title: 'Insights', text: 'Rentetan fokus, jam terbaik, dan distribusi waktu dari datamu sendiri.' },
   { icon: 'bell', title: 'Lonceng notifikasi', text: 'Pengumuman dari tim muncul di sini. Pesan penting tampil sebagai banner.' },
-  { icon: 'settings', title: 'Pengaturan', text: 'Paket, tampilan, dan bantuan: kirim masukan atau buat tiket kapan saja.' },
+  { icon: 'settings', title: 'Pengaturan', text: 'Paket, tim, tampilan, dan bantuan: kirim masukan, buat tiket, atau buka Pusat Bantuan kapan saja.' },
 ]
 
 const STEPS = ['Perkenalan', 'Tujuan', 'Fokus', 'Target', 'Tampilan', 'Fitur', 'Notifikasi', 'Selesai']

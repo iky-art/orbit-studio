@@ -1,11 +1,37 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from './Icon'
 import { useAnnouncements } from '../hooks/useAnnouncements'
+import { useMyInvitations } from '../hooks/useTeams'
+import { useAuth } from '../providers/AuthProvider'
+import { useToast } from '../providers/ToastProvider'
+import { acceptInvitation, declineInvitation } from '../services/teams'
 import { formatRelative } from '../lib/format'
 
 /** Lonceng notifikasi: pengumuman yang diterbitkan admin. */
 export function NotificationBell() {
   const { items, unread, read, markAllRead } = useAnnouncements()
+  const invites = useMyInvitations()
+  const { session } = useAuth()
+  const toast = useToast()
+  const [working, setWorking] = useState(null)
+  const total = unread + invites.rows.length
+
+  const answer = async (invitation, accept) => {
+    setWorking(invitation.id)
+    try {
+      if (accept) {
+        await acceptInvitation(invitation, session)
+        toast.success(`Kamu bergabung ke tim ${invitation.teamName}.`)
+      } else {
+        await declineInvitation(invitation)
+        toast.info('Undangan ditolak.')
+      }
+    } catch (error) {
+      toast.error(error?.message || 'Gagal menjawab undangan.')
+    } finally {
+      setWorking(null)
+    }
+  }
   const [open, setOpen] = useState(false)
   const wrapRef = useRef(null)
 
@@ -32,11 +58,11 @@ export function NotificationBell() {
         className="icon-btn"
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-label={unread ? `Notifikasi, ${unread} belum dibaca` : 'Notifikasi'}
+        aria-label={total ? `Notifikasi, ${total} belum dibaca` : 'Notifikasi'}
         onClick={() => setOpen((current) => !current)}
       >
         <Icon name="bell" size={20} />
-        {unread ? <span className="bell-badge">{unread > 9 ? '9+' : unread}</span> : null}
+        {total ? <span className="bell-badge">{total > 9 ? '9+' : total}</span> : null}
       </button>
 
       {open ? (
@@ -49,8 +75,39 @@ export function NotificationBell() {
               </button>
             ) : null}
           </div>
+          {invites.rows.length ? (
+            <ul className="bell-list" aria-label="Undangan tim">
+              {invites.rows.map((invitation) => (
+                <li key={invitation.id} className="is-unread">
+                  <p className="bell-title">Undangan tim {invitation.teamName}</p>
+                  <p className="bell-body">
+                    {invitation.invitedBy} mengundangmu sebagai{' '}
+                    {invitation.role === 'admin' ? 'admin' : 'anggota'}.
+                  </p>
+                  <div className="support-actions" style={{ marginTop: 8 }}>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      disabled={working === invitation.id}
+                      onClick={() => answer(invitation, true)}
+                    >
+                      Terima
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      disabled={working === invitation.id}
+                      onClick={() => answer(invitation, false)}
+                    >
+                      Tolak
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {items.length === 0 ? (
-            <p className="bell-empty">Belum ada pengumuman.</p>
+            invites.rows.length ? null : <p className="bell-empty">Belum ada pengumuman.</p>
           ) : (
             <ul className="bell-list">
               {items.map((item) => (

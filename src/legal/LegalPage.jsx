@@ -18,7 +18,7 @@ function Blocks({ body }) {
   )
 }
 
-function LegalHeader() {
+export function LegalHeader({ sub = 'Legal' }) {
   return (
     <header className="legal-top">
       <Link to="/" className="brand" aria-label="Orbit Studio, halaman utama">
@@ -29,7 +29,7 @@ function LegalHeader() {
           <span className="brand-name">
             orbit<span className="slash">/</span>studio
           </span>
-          <span className="brand-sub">Legal</span>
+          <span className="brand-sub">{sub}</span>
         </span>
       </Link>
       <Link to="/app" className="btn btn-ghost btn-sm">
@@ -40,7 +40,7 @@ function LegalHeader() {
   )
 }
 
-function LegalFooter() {
+export function LegalFooter() {
   return (
     <footer className="legal-foot">
       <span>© {new Date().getFullYear()} {LEGAL.company}</span>

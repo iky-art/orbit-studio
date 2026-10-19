@@ -267,6 +267,11 @@ function LandingFooter() {
             <Link to="/app/admin/system">Status sistem</Link>
           </div>
           <div>
+            <p className="land-foot-title">Bantuan</p>
+            <Link to="/help">Pusat Bantuan</Link>
+            <Link to="/app/settings">Buat tiket</Link>
+          </div>
+          <div>
             <p className="land-foot-title">Legal</p>
             <Link to="/legal/terms">Syarat & Ketentuan</Link>
             <Link to="/legal/privacy">Kebijakan Privasi</Link>

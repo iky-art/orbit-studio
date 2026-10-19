@@ -2,7 +2,7 @@
 export const LEGAL = {
   company: 'Orbit Studio',
   product: 'Orbit Studio Workbench',
-  updated: '19 Oktober 2026',
+  updated: '20 Oktober 2026',
   // Isi lewat VITE_CONTACT_EMAIL di .env.local / variabel Cloudflare Pages.
   email: (import.meta.env.VITE_CONTACT_EMAIL ?? '').trim(),
 }

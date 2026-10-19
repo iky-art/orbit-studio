@@ -146,6 +146,15 @@ function profileFromDoc(uid, data, fallbackEmail) {
   }
 }
 
+/** Sesi aplikasi dari akun Firebase + dokumen profil. */
+function sessionFrom(user, data) {
+  return {
+    ...profileFromDoc(user.uid, data, user.email),
+    emailVerified: Boolean(user.emailVerified),
+    provider: user.providerData?.[0]?.providerId ?? 'password',
+  }
+}
+
 const ERROR_MESSAGES = {
   'auth/email-already-in-use': 'Email sudah digunakan. Coba masuk, bukan daftar.',
   'auth/invalid-email': 'Format email tidak valid.',
@@ -157,7 +166,13 @@ const ERROR_MESSAGES = {
   'auth/too-many-requests': 'Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.',
   'auth/network-request-failed': 'Tidak bisa terhubung ke Firebase. Periksa koneksi internet.',
   'auth/operation-not-allowed':
-    'Login Email/Password belum diaktifkan di Firebase Console (Authentication → Sign-in method).',
+    'Metode login ini belum diaktifkan di Firebase Console (Authentication → Sign-in method).',
+  'auth/popup-closed-by-user': 'Jendela login ditutup sebelum selesai.',
+  'auth/cancelled-popup-request': 'Login dibatalkan. Coba lagi.',
+  'auth/popup-blocked': 'Popup diblokir browser. Izinkan popup untuk situs ini lalu coba lagi.',
+  'auth/account-exists-with-different-credential':
+    'Email ini sudah terdaftar dengan metode lain. Masuk dengan email dan kata sandi.',
+  'auth/requires-recent-login': 'Sesi terlalu lama. Keluar, masuk lagi, lalu ulangi.',
   'auth/invalid-api-key': 'API key Firebase tidak valid. Periksa VITE_FIREBASE_API_KEY.',
   'auth/configuration-not-found':
     'Authentication belum diaktifkan di Firebase Console (klik Get started).',
@@ -206,7 +221,7 @@ async function startFirebaseSync() {
           emit(null)
           return
         }
-        const session = profileFromDoc(user.uid, snap.data(), user.email)
+        const session = sessionFrom(user, snap.data())
         writeJSON('session', session)
         emit(session)
       } catch {
@@ -264,7 +279,7 @@ export const authService = {
       ctx.fs
         .setDoc(ref, { lastActiveAt: new Date().toISOString() }, { merge: true })
         .catch(() => {})
-      const session = profileFromDoc(uid, data, cred.user.email)
+      const session = sessionFrom(cred.user, data)
       writeJSON('session', session)
       emit(session)
       return session
@@ -294,10 +309,178 @@ export const authService = {
         lastActiveAt: new Date().toISOString(),
       }
       await ctx.fs.setDoc(ctx.fs.doc(ctx.db, 'users', cred.user.uid), record)
-      const session = profileFromDoc(cred.user.uid, record, email)
+      ctx.auth.sendEmailVerification(cred.user).catch(() => {})
+      const session = sessionFrom(cred.user, record)
       writeJSON('session', session)
       emit(session)
       return session
+    } catch (error) {
+      throw friendly(error)
+    }
+  },
+
+  /** Masuk atau daftar dengan akun Google (butuh Google diaktifkan di Firebase). */
+  async signInWithGoogle() {
+    if (!isFirebaseConfigured) {
+      throw new Error('Login Google hanya tersedia di mode Firebase.')
+    }
+    try {
+      const ctx = await firebaseAuth()
+      const provider = new ctx.auth.GoogleAuthProvider()
+      provider.setCustomParameters({ prompt: 'select_account' })
+      const cred = await ctx.auth.signInWithPopup(ctx.instance, provider)
+      const user = cred.user
+      const ref = ctx.fs.doc(ctx.db, 'users', user.uid)
+      const snap = await ctx.fs.getDoc(ref)
+      let data = snap.data()
+      if (!snap.exists()) {
+        const now = new Date().toISOString()
+        data = {
+          name: user.displayName || user.email?.split('@')[0] || 'Pengguna',
+          email: user.email ?? '',
+          role: 'member',
+          plan: 'Free',
+          status: 'aktif',
+          onboarded: false,
+          createdAt: now,
+          joinedAt: now,
+          lastActiveAt: now,
+        }
+        await ctx.fs.setDoc(ref, data)
+      }
+      if (data.status === 'nonaktif') {
+        await ctx.auth.signOut(ctx.instance)
+        const blocked = new Error(
+          'Akun ini dinonaktifkan oleh admin. Hubungi admin untuk mengaktifkannya kembali.',
+        )
+        blocked.code = 'app/account-disabled'
+        throw blocked
+      }
+      ctx.fs
+        .setDoc(ref, { lastActiveAt: new Date().toISOString() }, { merge: true })
+        .catch(() => {})
+      const session = sessionFrom(user, data)
+      writeJSON('session', session)
+      emit(session)
+      return session
+    } catch (error) {
+      throw friendly(error)
+    }
+  },
+
+  /** Kirim ulang email verifikasi ke akun yang sedang masuk. */
+  async sendVerification() {
+    if (!isFirebaseConfigured) return false
+    try {
+      const ctx = await firebaseAuth()
+      const user = ctx.instance.currentUser
+      if (!user) throw new Error('Sesi berakhir. Masuk lagi lalu coba kirim ulang.')
+      await ctx.auth.sendEmailVerification(user)
+      return true
+    } catch (error) {
+      throw friendly(error)
+    }
+  },
+
+  /** Muat ulang status verifikasi email dari Firebase. */
+  async refreshVerification() {
+    if (!isFirebaseConfigured) return true
+    const ctx = await firebaseAuth()
+    const user = ctx.instance.currentUser
+    if (!user) return false
+    await user.reload()
+    const current = readJSON('session', null)
+    if (current) {
+      const next = { ...current, emailVerified: Boolean(user.emailVerified) }
+      writeJSON('session', next)
+      emit(next)
+    }
+    return Boolean(user.emailVerified)
+  },
+
+  /** Kumpulkan semua data milik pengguna untuk diunduh. */
+  async exportMyData() {
+    const current = readJSON('session', null)
+    if (!current) throw new Error('Masuk dulu untuk mengekspor data.')
+    const out = { app: 'Orbit Studio', exportedAt: new Date().toISOString() }
+    if (!isFirebaseConfigured) {
+      return { ...out, mode: 'demo', profile: current }
+    }
+    try {
+      const ctx = await firebaseAuth()
+      const uid = current.uid
+      const profile = await ctx.fs.getDoc(ctx.fs.doc(ctx.db, 'users', uid))
+      out.mode = 'firebase'
+      out.profile = profile.exists() ? { id: uid, ...profile.data() } : null
+      for (const name of ['activities', 'tickets', 'feedback', 'memberships']) {
+        const snap = await ctx.fs.getDocs(
+          ctx.fs.query(ctx.fs.collection(ctx.db, name), ctx.fs.where('uid', '==', uid)),
+        )
+        out[name] = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+      }
+      return out
+    } catch (error) {
+      throw friendly(error)
+    }
+  },
+
+  /**
+   * Hapus akun dan seluruh data milik pengguna. Mode Firebase meminta
+   * konfirmasi ulang (kata sandi atau popup Google) sebelum menghapus apa pun.
+   */
+  async deleteAccount({ password } = {}) {
+    const current = readJSON('session', null)
+    if (!current) throw new Error('Tidak ada sesi yang aktif.')
+    if (!isFirebaseConfigured) {
+      writeJSON(
+        'accounts',
+        accounts().filter((account) => account.uid !== current.uid),
+      )
+      removeKey('session')
+      emit(null)
+      return true
+    }
+    try {
+      const ctx = await firebaseAuth()
+      const user = ctx.instance.currentUser
+      if (!user) throw new Error('Sesi berakhir. Masuk lagi lalu ulangi.')
+
+      if (user.providerData.some((item) => item.providerId === 'password')) {
+        if (!password) throw new Error('Masukkan kata sandimu untuk konfirmasi.')
+        await ctx.auth.reauthenticateWithCredential(
+          user,
+          ctx.auth.EmailAuthProvider.credential(user.email, password),
+        )
+      } else {
+        await ctx.auth.reauthenticateWithPopup(user, new ctx.auth.GoogleAuthProvider())
+      }
+
+      const uid = user.uid
+      const owned = await ctx.fs.getDocs(
+        ctx.fs.query(
+          ctx.fs.collection(ctx.db, 'memberships'),
+          ctx.fs.where('uid', '==', uid),
+          ctx.fs.where('role', '==', 'owner'),
+        ),
+      )
+      if (!owned.empty) {
+        const teamName = owned.docs[0].data().teamName ?? 'tim'
+        throw new Error(
+          `Kamu masih pemilik tim "${teamName}". Hapus tim itu dulu sebelum menghapus akun.`,
+        )
+      }
+
+      for (const name of ['activities', 'tickets', 'feedback', 'memberships']) {
+        const snap = await ctx.fs.getDocs(
+          ctx.fs.query(ctx.fs.collection(ctx.db, name), ctx.fs.where('uid', '==', uid)),
+        )
+        await Promise.all(snap.docs.map((d) => ctx.fs.deleteDoc(d.ref)))
+      }
+      await ctx.fs.deleteDoc(ctx.fs.doc(ctx.db, 'users', uid))
+      await ctx.auth.deleteUser(user)
+      removeKey('session')
+      emit(null)
+      return true
     } catch (error) {
       throw friendly(error)
     }

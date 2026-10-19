@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { BottomDock, NAV_ITEMS } from '../components/BottomDock'
 import { BroadcastBanner } from '../components/BroadcastBanner'
 import { SystemBanner } from '../components/SystemBanner'
+import { VerifyEmailBanner } from '../components/VerifyEmailBanner'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
 import { InstallBanner } from '../components/InstallBanner'
@@ -49,6 +50,8 @@ export function MainApp() {
         <Header />
 
         <InstallBanner />
+
+        <VerifyEmailBanner />
 
         <SystemBanner />
 
