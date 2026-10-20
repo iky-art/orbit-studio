@@ -412,6 +412,8 @@ export const authService = {
       const profile = await ctx.fs.getDoc(ctx.fs.doc(ctx.db, 'users', uid))
       out.mode = 'firebase'
       out.profile = profile.exists() ? { id: uid, ...profile.data() } : null
+      const prefs = await ctx.fs.getDoc(ctx.fs.doc(ctx.db, 'userSettings', uid))
+      out.settings = prefs.exists() ? prefs.data().values ?? null : null
       for (const name of ['activities', 'tickets', 'feedback', 'memberships']) {
         const snap = await ctx.fs.getDocs(
           ctx.fs.query(ctx.fs.collection(ctx.db, name), ctx.fs.where('uid', '==', uid)),
@@ -476,6 +478,7 @@ export const authService = {
         )
         await Promise.all(snap.docs.map((d) => ctx.fs.deleteDoc(d.ref)))
       }
+      await ctx.fs.deleteDoc(ctx.fs.doc(ctx.db, 'userSettings', uid)).catch(() => {})
       await ctx.fs.deleteDoc(ctx.fs.doc(ctx.db, 'users', uid))
       await ctx.auth.deleteUser(user)
       removeKey('session')

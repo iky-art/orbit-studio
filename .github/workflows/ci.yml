@@ -1,0 +1,39 @@
+name: CI
+
+# Membangun aplikasi di setiap push ke main dan setiap pull request.
+# Build Vite juga memeriksa sintaks dan impor, jadi galat tertangkap sebelum tayang.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Pasang dependensi
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Ringkasan ukuran
+        run: |
+          echo "### Ukuran build" >> "$GITHUB_STEP_SUMMARY"
+          du -sh dist >> "$GITHUB_STEP_SUMMARY"
+          ls -lh dist/assets | head -20 >> "$GITHUB_STEP_SUMMARY"

@@ -1,5 +1,19 @@
 # Riwayat versi
 
+## 1.3.0 — 20 Oktober 2026
+
+### Baru
+- **Cuaca real-time** di Beranda: suhu dan kondisi saat ini (terasa, lembap,
+  angin), ringkasan hari ini, dan **suhu besok**. Lokasi lewat GPS atau pencarian
+  kota; diperbarui otomatis tiap 10 menit. Data dari Open-Meteo.
+- **Pengaturan ikut akun**: semua pengaturan tersinkron ke akun dan real-time
+  antarperangkat. Ikut dalam unduh data dan terhapus bersama akun.
+- **Pengecekan build otomatis** lewat GitHub Actions (`.github/workflows/ci.yml`).
+
+### Catatan upgrade
+- **Perbarui Rules Firestore** (README): koleksi baru `userSettings`.
+- Cache PWA naik ke `orbit-v5`.
+
 ## 1.2.0 — 20 Oktober 2026
 
 ### Baru

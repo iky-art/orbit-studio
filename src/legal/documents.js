@@ -152,7 +152,8 @@ const privacy = {
           'Catatan aktivitas yang kamu buat: jenis, judul, nama proyek (opsional), durasi (opsional), dan waktu pencatatan. Sesi fokus yang selesai di Beranda juga tercatat otomatis sebagai catatan aktivitas.',
           'Masukan dan tiket bantuan yang kamu kirim, beserta balasan dari tim kami.',
           'Data tim bila kamu membuatnya atau diundang: nama tim, peranmu, serta nama dan email anggota (terlihat oleh sesama anggota tim yang sama) dan email yang diundang.',
-          'Data yang tersimpan hanya di perangkatmu: sesi masuk, pengaturan tampilan dan preferensi, serta daftar pesan Broadcast yang sudah kamu tutup (lihat Kebijakan Cookie & Penyimpanan Lokal).',
+          'Pengaturan aplikasi (tampilan, preferensi, dan isian di Akun & Profil seperti nama pengguna dan nomor telepon yang kamu isi) disimpan di akunmu agar mengikuti kamu di berbagai perangkat.',
+          'Data yang tersimpan hanya di perangkatmu: sesi masuk, lokasi cuaca pilihanmu, dan daftar pesan Broadcast yang sudah kamu tutup (lihat Kebijakan Cookie & Penyimpanan Lokal).',
           'Data teknis: saat kamu masuk atau mengakses database, penyedia infrastruktur (Google Firebase dan penyedia hosting) dapat memproses alamat IP, jenis perangkat, dan log teknis untuk menjalankan serta mengamankan layanan mereka.',
         ],
         'Kami tidak meminta data sensitif (seperti data kesehatan, biometrik, atau keuangan) dan kamu diminta tidak memasukkannya ke kolom bebas seperti judul aktivitas.',
@@ -178,6 +179,7 @@ const privacy = {
         [
           'Google Firebase (Authentication dan Cloud Firestore) menyimpan akun, profil, dan catatanmu sebagai pemroses data kami.',
           'Penyedia hosting (misalnya Cloudflare Pages) menyajikan aplikasi ke perangkatmu.',
+          'Open-Meteo menyediakan data cuaca. Browsermu mengirim koordinat lokasi yang kamu pilih (atau kata kunci kota yang kamu cari) langsung ke Open-Meteo; kami tidak menyimpannya di server kami.',
         ],
         'Saat ini kami tidak memasang pelacak iklan maupun layanan analitik pihak ketiga di aplikasi. Kami tidak menjual atau menyewakan data pribadimu. Data dapat dibuka kepada pihak berwenang bila diwajibkan hukum.',
       ],
@@ -269,7 +271,7 @@ const cookies = {
       body: [
         'Orbit Studio berjalan sebagai aplikasi web yang menyimpan sebagian data langsung di browsermu:',
         [
-          'Penyimpanan lokal (localStorage, awalan "orbit:"): sesi masuk, pengaturan tampilan dan preferensi, status timer fokus, serta daftar pesan Broadcast yang sudah kamu tutup.',
+          'Penyimpanan lokal (localStorage, awalan "orbit:"): sesi masuk, pengaturan tampilan dan preferensi, status timer fokus, lokasi dan cache cuaca, serta daftar pesan Broadcast yang sudah kamu tutup.',
           'Penyimpanan milik Firebase (IndexedDB dan sejenisnya): token yang menjaga kamu tetap masuk.',
           'Cache aplikasi (service worker): salinan berkas aplikasi agar bisa dibuka cepat dan sebagian berjalan tanpa internet.',
         ],

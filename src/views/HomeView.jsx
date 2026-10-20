@@ -6,6 +6,7 @@ import { RecentActivity } from '../components/RecentActivity'
 import { FocusBanner } from '../components/FocusBanner'
 import { ActivityComposer } from '../components/ActivityComposer'
 import { DailyTarget } from '../components/DailyTarget'
+import { WeatherCard } from '../components/WeatherCard'
 import { DataNotice } from '../components/DataNotice'
 import { useDashboard } from '../hooks/useDashboard'
 
@@ -37,6 +38,10 @@ export function HomeView({ onNavigate }) {
           <ActivityComposer onAdd={add} />
         </div>
       )}
+
+      <div className="section">
+        <WeatherCard />
+      </div>
 
       <section className="section" aria-label="Ringkasan metrik">
         <div className="metrics-grid">

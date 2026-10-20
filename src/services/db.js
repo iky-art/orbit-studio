@@ -147,6 +147,47 @@ export function subscribeWhere(name, field, value, onData, onError) {
   }
 }
 
+/** Tulis satu dokumen dengan id tertentu (mode demo: dilewati). */
+export async function put(name, id, data) {
+  if (DEMO_MODE) return data
+  const { fs, db } = await firestore()
+  await fs.setDoc(fs.doc(db, name, id), data)
+  return data
+}
+
+/**
+ * Berlangganan satu dokumen secara real-time. `onData(doc | null, { pending })`;
+ * `pending` true bila perubahan berasal dari tulisan lokal yang belum dikonfirmasi server.
+ */
+export function subscribeDoc(name, id, onData, onError) {
+  if (DEMO_MODE) {
+    onData(null, { pending: false })
+    return () => {}
+  }
+  let cancelled = false
+  let unsubscribe = null
+  firestore()
+    .then((ctx) => {
+      if (cancelled || !ctx) return
+      const { fs, db } = ctx
+      unsubscribe = fs.onSnapshot(
+        fs.doc(db, name, id),
+        (snap) =>
+          onData(snap.exists() ? { id: snap.id, ...snap.data() } : null, {
+            pending: snap.metadata.hasPendingWrites,
+          }),
+        (error) => onError?.(error),
+      )
+    })
+    .catch((error) => {
+      if (!cancelled) onError?.(error)
+    })
+  return () => {
+    cancelled = true
+    unsubscribe?.()
+  }
+}
+
 export async function update(name, id, patch) {
   if (!DEMO_MODE) {
     const ctx = await firestore()

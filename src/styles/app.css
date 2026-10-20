@@ -1738,3 +1738,136 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+
+/* Kartu cuaca */
+.weather-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+.weather-place {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.weather-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.weather-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.weather-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.weather-temp {
+  margin: 0;
+  font-size: 2.6rem;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.weather-temp small {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-left: 2px;
+  color: var(--muted);
+}
+.weather-desc {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+.weather-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.84rem;
+  color: var(--text-soft);
+}
+.weather-facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.weather-days {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.weather-day {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.weather-day-icon {
+  color: var(--accent);
+  display: grid;
+}
+.weather-day-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+}
+.weather-day-body span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.weather-day-temp {
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+.weather-foot {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.weather-foot a {
+  color: var(--accent);
+}
+.weather-results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.weather-result {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 14px);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.weather-result span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}

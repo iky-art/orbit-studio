@@ -38,7 +38,7 @@ const THEMES = [
 ]
 
 const TOUR = [
-  { icon: 'home', title: 'Beranda', text: 'Catat aktivitas dan jalankan timer fokus (durasinya bisa diatur). Sesi yang selesai tercatat otomatis.' },
+  { icon: 'home', title: 'Beranda', text: 'Cuaca hari ini dan besok, catat aktivitas, dan timer fokus (durasinya bisa diatur). Sesi yang selesai tercatat otomatis.' },
   { icon: 'activity', title: 'Aktivitas', text: 'Riwayat semua catatanmu, bisa disaring per jenis.' },
   { icon: 'insights', title: 'Insights', text: 'Rentetan fokus, jam terbaik, dan distribusi waktu dari datamu sendiri.' },
   { icon: 'bell', title: 'Lonceng notifikasi', text: 'Pengumuman dari tim muncul di sini. Pesan penting tampil sebagai banner.' },

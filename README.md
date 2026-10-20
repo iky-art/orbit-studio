@@ -136,6 +136,11 @@ service cloud.firestore {
                     && request.resource.data.uid == resource.data.uid;
     }
 
+    // Pengaturan aplikasi per akun (sinkron antarperangkat).
+    match /userSettings/{uid} {
+      allow read, write: if isActive() && request.auth.uid == uid;
+    }
+
     // Masukan: pengguna mengirim dan boleh melihat/menghapus miliknya (ekspor & hapus akun).
     match /feedback/{id} {
       allow create: if isActive() && request.resource.data.uid == request.auth.uid
@@ -301,6 +306,14 @@ Kalau berhasil, layar masuk tidak lagi menampilkan akun demo.
   pengguna, dan bisa dihentikan atau dihapus admin kapan saja. Koleksi:
   `broadcasts` (`src/hooks/useBroadcasts.js`). Hanya aktif di mode Firebase;
   di mode demo banner baru terbaca setelah muat ulang.
+- **Cuaca** di Beranda: cuaca saat ini, hari ini, dan suhu besok dari
+  [Open-Meteo](https://open-meteo.com/) (tanpa API key). Lokasi dipilih pengguna
+  (GPS atau cari kota), tersimpan di perangkat, dan data diperbarui otomatis tiap
+  10 menit serta saat aplikasi dibuka kembali. Pemakaian gratis Open-Meteo
+  ditujukan untuk non-komersial; jika Orbit Studio berkembang jadi layanan
+  berbayar, cek [syarat dan harga API-nya](https://open-meteo.com/en/pricing).
+- **Pengaturan ikut akun**: semua pengaturan disinkronkan ke `userSettings/{uid}`
+  dan diperbarui real-time di perangkat lain (perubahan terakhir menang).
 - **Konsol admin** (`/app/admin`) membaca semua koleksi secara real-time lewat
   `onSnapshot` (`src/services/db.js` → `subscribe`).
 - Semua koleksi **dimulai kosong**. Data contoh (`seed` dan
@@ -497,6 +510,17 @@ Unggah langsung hasil build dengan Wrangler (butuh login Cloudflare sekali):
 ```bash
 npm run build
 npx wrangler pages deploy dist --project-name orbit-studio
+```
+
+### Pengecekan build otomatis (GitHub Actions)
+
+Berkas `.github/workflows/ci.yml` membangun aplikasi di setiap push ke `main`
+dan setiap pull request. Build Vite ikut memeriksa sintaks dan impor, jadi
+galat terlihat di tab **Actions** GitHub sebelum sampai ke situs. Tambahkan
+lencana di README bila mau:
+
+```
+![CI](https://github.com/<username>/orbit-studio/actions/workflows/ci.yml/badge.svg)
 ```
 
 ### Hosting lain
