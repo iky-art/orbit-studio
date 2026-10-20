@@ -5,7 +5,7 @@
    - font/CDN  : cache-first dengan batas jumlah
    Tidak ada langkah build; daftar precache statis. */
 
-const VERSION = 'orbit-v5'
+const VERSION = 'orbit-v6'
 const SHELL = `${VERSION}-shell`
 const ASSETS = `${VERSION}-assets`
 const FONTS = `${VERSION}-fonts`

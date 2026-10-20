@@ -1,5 +1,22 @@
 # Riwayat versi
 
+## 1.4.0 — 20 Oktober 2026
+
+### Baru
+- **Tautan undangan tim** berbentuk `/<kode-acak>/invite/<nama-tim>`: admin
+  membuat, menyalin, membagikan, dan mencabutnya (berlaku 1/7/30 hari). Yang
+  belum punya akun diarahkan daftar lalu kembali otomatis untuk bergabung.
+- **Ruang tim** di `/app/team/<id>`: obrolan real-time, catatan tim (dikelola
+  admin), daftar anggota, dan pengelolaan tautan.
+- Pesan obrolan ikut diekspor dan ikut terhapus saat akun dihapus.
+- Berkas `firestore.rules` siap salin.
+
+### Catatan upgrade
+- **Ganti seluruh Rules Firestore** dengan `firestore.rules`: ada koleksi
+  `teamLinks`, subkoleksi pesan tim, aturan bergabung lewat tautan, dan admin
+  tim boleh mengubah catatan tim.
+- Cache PWA naik ke `orbit-v6`.
+
 ## 1.3.0 — 20 Oktober 2026
 
 ### Baru

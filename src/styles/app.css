@@ -1871,3 +1871,145 @@
   font-size: 0.75rem;
   color: var(--muted);
 }
+
+/* Ruang tim: obrolan, tautan, undangan */
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.chat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 220px;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 14px);
+}
+.chat-day {
+  margin: var(--space-3) 0 6px;
+  text-align: center;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.chat-msg {
+  display: flex;
+}
+.chat-msg.is-mine {
+  justify-content: flex-end;
+}
+.chat-bubble {
+  max-width: 82%;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.06));
+}
+.chat-msg.is-mine .chat-bubble {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+.chat-author {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.74rem;
+  color: var(--accent);
+}
+.chat-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.chat-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 0.66rem;
+  color: var(--muted);
+}
+.chat-del {
+  display: inline-grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.chat-form {
+  display: flex;
+  gap: var(--space-2);
+}
+.chat-form .field-input {
+  flex: 1;
+  min-width: 0;
+}
+.team-notice {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-soft);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.invite-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.invite-link {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 14px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.invite-link[data-state='aktif'] {
+  border-color: var(--accent);
+}
+.invite-link[data-state='aktif'] .plan-tag {
+  background: var(--accent-soft);
+}
+.invite-link-url {
+  margin: 0;
+  font-size: 0.82rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow-wrap: anywhere;
+}
+.invite-link-meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+.invite-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6, 32px) var(--space-5);
+}
+.invite-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}

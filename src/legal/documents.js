@@ -69,6 +69,7 @@ const terms = {
         'Pengelola dengan peran owner atau admin dapat membuka konsol admin untuk menjalankan Layanan. Dalam batas yang dijelaskan di Kebijakan Privasi, mereka dapat melihat data akun dan catatan aktivitas, mengelola peran pengguna, serta mengirim pesan Broadcast yang tampil di aplikasi pengguna.',
         'Pesan Broadcast bersifat informasi layanan (misalnya pemeliharaan atau pembaruan) dan dapat kamu tutup dari layar.',
         'Pembuat tim bertanggung jawab atas siapa yang ia undang. Anggota tim dapat melihat nama dan email anggota lain di tim yang sama.',
+        'Tautan undangan tim memberi akses sebagai anggota kepada siapa pun yang memegangnya sampai tautan kedaluwarsa atau dicabut, jadi bagikan dengan hati-hati. Setiap anggota bertanggung jawab atas pesan yang ia kirim di obrolan tim, dan admin tim dapat menghapus pesan.',
       ],
     },
     {
@@ -152,6 +153,8 @@ const privacy = {
           'Catatan aktivitas yang kamu buat: jenis, judul, nama proyek (opsional), durasi (opsional), dan waktu pencatatan. Sesi fokus yang selesai di Beranda juga tercatat otomatis sebagai catatan aktivitas.',
           'Masukan dan tiket bantuan yang kamu kirim, beserta balasan dari tim kami.',
           'Data tim bila kamu membuatnya atau diundang: nama tim, peranmu, serta nama dan email anggota (terlihat oleh sesama anggota tim yang sama) dan email yang diundang.',
+          'Pesan obrolan dan catatan tim: isi pesan, nama pengirim, dan waktu. Semuanya terlihat oleh seluruh anggota tim itu, dan pesan yang kamu kirim ikut terhapus bersama akunmu.',
+          'Tautan undangan tim: nama tim, nama pembuat tautan, dan masa berlakunya dapat dilihat oleh siapa pun yang memegang tautan itu.',
           'Pengaturan aplikasi (tampilan, preferensi, dan isian di Akun & Profil seperti nama pengguna dan nomor telepon yang kamu isi) disimpan di akunmu agar mengikuti kamu di berbagai perangkat.',
           'Data yang tersimpan hanya di perangkatmu: sesi masuk, lokasi cuaca pilihanmu, dan daftar pesan Broadcast yang sudah kamu tutup (lihat Kebijakan Cookie & Penyimpanan Lokal).',
           'Data teknis: saat kamu masuk atau mengakses database, penyedia infrastruktur (Google Firebase dan penyedia hosting) dapat memproses alamat IP, jenis perangkat, dan log teknis untuk menjalankan serta mengamankan layanan mereka.',
@@ -191,6 +194,7 @@ const privacy = {
         [
           'Kamu dapat melihat dan mengelola data akun serta catatan aktivitasmu sendiri.',
           'Pengguna lain tidak dapat melihat catatan aktivitasmu.',
+          'Sesama anggota di tim yang sama dapat melihat nama, email, peran, dan pesan obrolanmu di tim itu.',
           'Pengelola dengan peran owner atau admin dapat mengakses data akun dan catatan aktivitas lewat konsol admin, semata-mata untuk menjalankan, mengamankan, dan mendukung Layanan.',
         ],
       ],
@@ -271,7 +275,7 @@ const cookies = {
       body: [
         'Orbit Studio berjalan sebagai aplikasi web yang menyimpan sebagian data langsung di browsermu:',
         [
-          'Penyimpanan lokal (localStorage, awalan "orbit:"): sesi masuk, pengaturan tampilan dan preferensi, status timer fokus, lokasi dan cache cuaca, serta daftar pesan Broadcast yang sudah kamu tutup.',
+          'Penyimpanan lokal (localStorage, awalan "orbit:"): sesi masuk, pengaturan tampilan dan preferensi, status timer fokus, lokasi dan cache cuaca, undangan tim yang menunggu diselesaikan, serta daftar pesan Broadcast yang sudah kamu tutup.',
           'Penyimpanan milik Firebase (IndexedDB dan sejenisnya): token yang menjaga kamu tetap masuk.',
           'Cache aplikasi (service worker): salinan berkas aplikasi agar bisa dibuka cepat dan sebagian berjalan tanpa internet.',
         ],

@@ -147,6 +147,77 @@ export function subscribeWhere(name, field, value, onData, onError) {
   }
 }
 
+/** Ambil satu dokumen berdasarkan id (mode demo: null). */
+export async function getById(name, id) {
+  if (DEMO_MODE) return null
+  const ctx = await firestore()
+  if (!ctx) return null
+  const snap = await ctx.fs.getDoc(ctx.fs.doc(ctx.db, name, id))
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null
+}
+
+/** Obrolan tim: 100 pesan terbaru, real-time (subkoleksi teams/{id}/messages). */
+export function subscribeMessages(teamId, onData, onError, max = 100) {
+  if (DEMO_MODE) {
+    onData([])
+    return () => {}
+  }
+  let cancelled = false
+  let unsubscribe = null
+  firestore()
+    .then((ctx) => {
+      if (cancelled || !ctx) return
+      const { fs, db } = ctx
+      unsubscribe = fs.onSnapshot(
+        fs.query(
+          fs.collection(db, 'teams', teamId, 'messages'),
+          fs.orderBy('createdAtMs', 'desc'),
+          fs.limit(max),
+        ),
+        (snap) =>
+          onData(
+            snap.docs
+              .map((d) => ({ id: d.id, ...d.data() }))
+              .reverse(),
+          ),
+        (error) => onError?.(error),
+      )
+    })
+    .catch((error) => {
+      if (!cancelled) onError?.(error)
+    })
+  return () => {
+    cancelled = true
+    unsubscribe?.()
+  }
+}
+
+export async function addTeamMessage(teamId, data) {
+  const { fs, db } = await firestore()
+  await fs.addDoc(fs.collection(db, 'teams', teamId, 'messages'), data)
+}
+
+export async function deleteTeamMessage(teamId, id) {
+  const { fs, db } = await firestore()
+  await fs.deleteDoc(fs.doc(db, 'teams', teamId, 'messages', id))
+}
+
+/** Hapus semua pesan sebuah tim (dipakai saat tim dihapus). */
+export async function clearTeamMessages(teamId) {
+  const { fs, db } = await firestore()
+  const snap = await fs.getDocs(fs.collection(db, 'teams', teamId, 'messages'))
+  await Promise.all(snap.docs.map((d) => fs.deleteDoc(d.ref)))
+}
+
+/** Hapus semua tautan undangan sebuah tim. */
+export async function clearTeamLinks(teamId) {
+  const { fs, db } = await firestore()
+  const snap = await fs.getDocs(
+    fs.query(fs.collection(db, 'teamLinks'), fs.where('teamId', '==', teamId)),
+  )
+  await Promise.all(snap.docs.map((d) => fs.deleteDoc(d.ref)))
+}
+
 /** Tulis satu dokumen dengan id tertentu (mode demo: dilewati). */
 export async function put(name, id, data) {
   if (DEMO_MODE) return data

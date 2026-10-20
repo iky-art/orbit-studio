@@ -1,4 +1,8 @@
 import { useEffect } from 'react'
+import { matchInvitePath, PENDING_INVITE_KEY } from './lib/invite'
+import { useAuth } from './providers/AuthProvider'
+import { readJSON } from './services/storage'
+import { InvitePage } from './team/InvitePage'
 import { Icon } from './components/Icon'
 import { Link, useRouter } from './lib/router'
 import { LandingPage } from './landing/LandingPage'
@@ -35,7 +39,18 @@ function NotFoundScreen({ path }) {
 }
 
 export default function App() {
-  const { path } = useRouter()
+  const { path, navigate } = useRouter()
+  const { session } = useAuth()
+  const invite = matchInvitePath(path)
+
+  // Setelah masuk/daftar dari tautan undangan, kembali ke halaman undangan itu.
+  useEffect(() => {
+    if (!session?.onboarded || !path.startsWith('/app')) return
+    const pending = readJSON(PENDING_INVITE_KEY, null)
+    if (pending?.token) {
+      navigate(`/${pending.token}/invite/${pending.slug || 'tim'}`, { replace: true })
+    }
+  }, [session?.onboarded, session?.uid, path, navigate])
 
   // Dilepas setelah React menggambar, menggantikan splash inline di index.html.
   useEffect(() => {
@@ -47,6 +62,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    if (invite) return // judul diatur InvitePage
     if (path === '/help' || path.startsWith('/help/')) return // judul diatur HelpPage
     if (path === '/legal' || path.startsWith('/legal/')) {
       document.title = getLegalTitle(path)
@@ -61,5 +77,6 @@ export default function App() {
   if (path === '/app' || path.startsWith('/app/')) return <OrbitApp />
   if (path === '/help' || path.startsWith('/help/')) return <HelpPage path={path} />
   if (path === '/legal' || path.startsWith('/legal/')) return <LegalPage path={path} />
+  if (invite) return <InvitePage token={invite.token} slug={invite.slug} />
   return <NotFoundScreen path={path} />
 }

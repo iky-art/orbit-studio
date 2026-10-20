@@ -11,6 +11,7 @@ import { ActivityView } from '../views/ActivityView'
 import { HomeView } from '../views/HomeView'
 import { InsightsView } from '../views/InsightsView'
 import { SettingsView } from '../views/SettingsView'
+import { TeamRoomView } from '../views/TeamRoomView'
 
 const VIEW_IDS = NAV_ITEMS.map((item) => item.id)
 
@@ -18,8 +19,10 @@ export function MainApp() {
   const { path, navigate } = useRouter()
 
   const match = matchPath('/app/:section?', path)
+  const teamId = matchPath('/app/team/:teamId', path)?.teamId ?? null
   const requested = match?.section ?? 'home'
-  const view = VIEW_IDS.includes(requested) ? requested : 'home'
+  // Ruang tim dibuka dari Pengaturan, jadi tab Pengaturan tetap menyala.
+  const view = teamId ? 'settings' : VIEW_IDS.includes(requested) ? requested : 'home'
 
   useEffect(() => {
     if (match?.section && !VIEW_IDS.includes(match.section)) {
@@ -58,7 +61,12 @@ export function MainApp() {
         <BroadcastBanner />
 
         <main id="main">
-          {NAV_ITEMS.map((item) => {
+          {teamId ? (
+            <div className="view" key={`team-${teamId}`}>
+              <TeamRoomView teamId={teamId} />
+            </div>
+          ) : null}
+          {(teamId ? [] : NAV_ITEMS).map((item) => {
             const active = view === item.id
             return (
               <section

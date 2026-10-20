@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { normalizeEmail } from '../services/teams'
-import { DEMO_MODE, subscribeWhere } from '../services/db'
+import { DEMO_MODE, subscribeDoc, subscribeMessages, subscribeWhere } from '../services/db'
 import { useAuth } from '../providers/AuthProvider'
 
 function useWhere(name, field, value, enabled = true) {
@@ -68,4 +68,42 @@ export function useMyInvitations() {
       .sort((a, b) => String(b.sentAt).localeCompare(String(a.sentAt)))
   }, [state.rows])
   return { ...state, rows }
+}
+
+/** Dokumen tim (catatan tim). */
+export function useTeam(teamId) {
+  const [team, setTeam] = useState(null)
+  useEffect(() => {
+    if (DEMO_MODE || !teamId) return undefined
+    return subscribeDoc('teams', teamId, (doc) => setTeam(doc), () => {})
+  }, [teamId])
+  return team
+}
+
+/** Tautan undangan milik tim (hanya admin yang boleh membaca daftarnya). */
+export function useTeamLinks(teamId, enabled) {
+  const state = useWhere('teamLinks', 'teamId', teamId, enabled)
+  const rows = useMemo(
+    () => state.rows.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))),
+    [state.rows],
+  )
+  return { ...state, rows }
+}
+
+/** 100 pesan obrolan tim terbaru (urut lama ke baru), real-time. */
+export function useTeamMessages(teamId) {
+  const [state, setState] = useState({ status: 'loading', rows: [] })
+  useEffect(() => {
+    if (DEMO_MODE || !teamId) {
+      setState({ status: 'ready', rows: [] })
+      return undefined
+    }
+    setState({ status: 'loading', rows: [] })
+    return subscribeMessages(
+      teamId,
+      (rows) => setState({ status: 'ready', rows }),
+      () => setState({ status: 'error', rows: [] }),
+    )
+  }, [teamId])
+  return state
 }

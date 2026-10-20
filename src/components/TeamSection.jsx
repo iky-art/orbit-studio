@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from '../lib/router'
 import { DEMO_MODE } from '../services/db'
 import {
   TEAM_ROLES,
@@ -16,7 +17,7 @@ import { useToast } from '../providers/ToastProvider'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-function TeamDetail({ membership }) {
+export function TeamDetail({ membership, showRoomLink = false }) {
   const { session } = useAuth()
   const toast = useToast()
   const isOwner = membership.role === 'owner'
@@ -63,6 +64,14 @@ function TeamDetail({ membership }) {
 
   return (
     <div className="team-detail">
+      {showRoomLink ? (
+        <div className="support-actions">
+          <Link to={`/app/team/${membership.teamId}`} className="btn btn-primary btn-sm">
+            Buka ruang tim
+          </Link>
+        </div>
+      ) : null}
+
       <ul className="team-members">
         {members.rows.map((item) => {
           const isMe = item.uid === session.uid
@@ -265,7 +274,7 @@ export function TeamSection() {
                       <span className="my-ticket-title">{item.teamName}</span>
                       <span className="plan-tag">{TEAM_ROLES[item.role] ?? item.role}</span>
                     </button>
-                    {open ? <TeamDetail membership={item} /> : null}
+                    {open ? <TeamDetail membership={item} showRoomLink /> : null}
                   </li>
                 )
               })}

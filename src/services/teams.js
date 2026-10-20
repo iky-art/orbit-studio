@@ -1,4 +1,14 @@
-import { create, remove, update } from './db'
+import { makeToken, teamSlug } from '../lib/invite'
+import {
+  addTeamMessage,
+  clearTeamLinks,
+  clearTeamMessages,
+  create,
+  deleteTeamMessage,
+  getById,
+  remove,
+  update,
+} from './db'
 
 const DAY = 86400000
 export const TEAM_ROLES = { owner: 'Pemilik', admin: 'Admin', member: 'Anggota' }
@@ -70,8 +80,10 @@ export const cancelInvitation = (invitation) => remove('invitations', invitation
 export const removeMember = (member) => remove('memberships', member.id)
 export const setMemberRole = (member, role) => update('memberships', member.id, { role })
 
-/** Hapus tim beserta keanggotaan dan undangannya (hanya pemilik). */
+/** Hapus tim beserta pesan, tautan, keanggotaan, dan undangannya (hanya pemilik). */
 export async function deleteTeam(membership, members, invitations) {
+  await clearTeamMessages(membership.teamId)
+  await clearTeamLinks(membership.teamId)
   await Promise.all(
     members.filter((item) => item.id !== membership.id).map((item) => remove('memberships', item.id)),
   )
@@ -79,3 +91,77 @@ export async function deleteTeam(membership, members, invitations) {
   await remove('teams', membership.teamId)
   await remove('memberships', membership.id)
 }
+
+// ------------------------------------------------------------ tautan undangan
+
+export const LINK_DURATIONS = [
+  { id: 1, label: '1 hari' },
+  { id: 7, label: '7 hari' },
+  { id: 30, label: '30 hari' },
+]
+
+/** Status tautan: 'aktif' | 'kedaluwarsa' | 'dicabut'. */
+export function linkState(link, now = Date.now()) {
+  if (link.active === false) return 'dicabut'
+  if (link.expiresAtMs && link.expiresAtMs <= now) return 'kedaluwarsa'
+  return 'aktif'
+}
+
+/** Buat tautan `/<token>/invite/<slug>`; peserta selalu bergabung sebagai anggota. */
+export async function createInviteLink(membership, days, user) {
+  const token = makeToken()
+  const now = Date.now()
+  await create('teamLinks', {
+    id: token,
+    teamId: membership.teamId,
+    teamName: membership.teamName,
+    teamSlug: teamSlug(membership.teamName),
+    role: 'member',
+    createdByUid: user.uid,
+    createdByName: user.name,
+    createdAt: new Date(now).toISOString(),
+    expiresAtMs: now + days * DAY,
+    active: true,
+  })
+  return token
+}
+
+export const revokeInviteLink = (link) => update('teamLinks', link.id, { active: false })
+export const getInviteLink = (token) => getById('teamLinks', token)
+
+/** Bergabung lewat tautan (anggota biasa). */
+export function joinViaLink(link, user) {
+  return create('memberships', {
+    id: membershipId(link.teamId, user.uid),
+    teamId: link.teamId,
+    teamName: link.teamName,
+    uid: user.uid,
+    name: user.name,
+    email: normalizeEmail(user.email),
+    role: 'member',
+    linkId: link.id,
+    joinedAt: new Date().toISOString(),
+  })
+}
+
+// ------------------------------------------------------------ obrolan & catatan
+
+export function postMessage(teamId, user, text) {
+  const now = Date.now()
+  return addTeamMessage(teamId, {
+    uid: user.uid,
+    name: user.name,
+    text: text.trim(),
+    createdAt: new Date(now).toISOString(),
+    createdAtMs: now,
+  })
+}
+
+export const deleteMessage = (teamId, id) => deleteTeamMessage(teamId, id)
+
+export const setTeamNotice = (teamId, notice, user) =>
+  update('teams', teamId, {
+    notice: notice.trim(),
+    noticeBy: user.name,
+    noticeAt: new Date().toISOString(),
+  })

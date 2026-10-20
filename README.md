@@ -164,8 +164,14 @@ service cloud.firestore {
     match /teams/{teamId} {
       allow read: if isMember(teamId);
       allow create: if isActive() && request.resource.data.ownerUid == request.auth.uid;
-      allow update: if isActive() && resource.data.ownerUid == request.auth.uid
-                    && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow update: if isActive() && (
+                      (resource.data.ownerUid == request.auth.uid
+                        && request.resource.data.ownerUid == resource.data.ownerUid)
+                      // admin tim hanya boleh mengubah catatan tim
+                      || (isTeamAdmin(teamId)
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['notice', 'noticeBy', 'noticeAt']))
+                    );
       allow delete: if isActive() && resource.data.ownerUid == request.auth.uid;
     }
 
@@ -177,14 +183,24 @@ service cloud.firestore {
       allow create: if isActive()
                     && mid == request.resource.data.teamId + '_' + request.auth.uid
                     && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.email == myEmail()
                     && (
+                      // pemilik membuat dirinya sendiri saat membentuk tim
                       (request.resource.data.role == 'owner'
                         && get(/databases/$(db)/documents/teams/$(request.resource.data.teamId)).data.ownerUid == request.auth.uid)
+                      // bergabung lewat undangan email
                       || (request.resource.data.role in ['admin', 'member']
+                        && request.resource.data.get('inviteId', '') != ''
                         && get(/databases/$(db)/documents/invitations/$(request.resource.data.inviteId)).data.teamId == request.resource.data.teamId
                         && get(/databases/$(db)/documents/invitations/$(request.resource.data.inviteId)).data.email == myEmail()
                         && get(/databases/$(db)/documents/invitations/$(request.resource.data.inviteId)).data.status == 'tertunda'
                         && get(/databases/$(db)/documents/invitations/$(request.resource.data.inviteId)).data.role == request.resource.data.role)
+                      // bergabung lewat tautan undangan (selalu sebagai anggota)
+                      || (request.resource.data.role == 'member'
+                        && request.resource.data.get('linkId', '') != ''
+                        && get(/databases/$(db)/documents/teamLinks/$(request.resource.data.linkId)).data.teamId == request.resource.data.teamId
+                        && get(/databases/$(db)/documents/teamLinks/$(request.resource.data.linkId)).data.active == true
+                        && get(/databases/$(db)/documents/teamLinks/$(request.resource.data.linkId)).data.expiresAtMs > request.time.toMillis())
                     );
       allow update: if isActive()
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
@@ -213,6 +229,31 @@ service cloud.firestore {
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt'])
                     && request.resource.data.status in ['diterima', 'ditolak'];
       allow delete: if isActive() && isTeamAdmin(resource.data.teamId);
+    }
+
+    // Tautan undangan tim: id dokumen = token acak. Siapa pun yang tahu token boleh
+    // melihatnya (pratinjau sebelum masuk); daftar dan pengelolaan hanya admin tim.
+    match /teamLinks/{token} {
+      allow get: if true;
+      allow list: if isActive() && isTeamAdmin(resource.data.teamId);
+      allow create: if isActive() && isTeamAdmin(request.resource.data.teamId)
+                    && request.resource.data.role == 'member'
+                    && request.resource.data.createdByUid == request.auth.uid
+                    && request.resource.data.active == true;
+      allow update: if isActive() && isTeamAdmin(resource.data.teamId)
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active']);
+      allow delete: if isActive() && isTeamAdmin(resource.data.teamId);
+    }
+
+    // Obrolan tim: hanya anggota yang membaca dan menulis.
+    match /teams/{teamId}/messages/{mid} {
+      allow read: if isActive() && isMember(teamId);
+      allow create: if isActive() && isMember(teamId)
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 1000;
+      allow delete: if isActive() && (resource.data.uid == request.auth.uid || isTeamAdmin(teamId));
     }
 
     // Publik: paket & harga, flag, status layanan, dan artikel Pusat Bantuan yang terbit.
@@ -312,6 +353,13 @@ Kalau berhasil, layar masuk tidak lagi menampilkan akun demo.
   10 menit serta saat aplikasi dibuka kembali. Pemakaian gratis Open-Meteo
   ditujukan untuk non-komersial; jika Orbit Studio berkembang jadi layanan
   berbayar, cek [syarat dan harga API-nya](https://open-meteo.com/en/pricing).
+- **Ruang tim dan tautan undangan**: admin tim membuat tautan
+  `https://<situs>/<kode-acak>/invite/<nama-tim>` (berlaku 1, 7, atau 30 hari, bisa
+  dicabut). Pembukanya yang belum masuk diarahkan masuk/daftar lalu kembali
+  otomatis ke halaman undangan, dan bergabung sebagai **anggota**. Di
+  `/app/team/<id>` anggota punya obrolan real-time (100 pesan terbaru), catatan
+  tim, daftar anggota, dan pengelolaan tautan. Koleksi: `teams`, `memberships`,
+  `teamLinks`, serta subkoleksi `teams/<id>/messages`.
 - **Pengaturan ikut akun**: semua pengaturan disinkronkan ke `userSettings/{uid}`
   dan diperbarui real-time di perangkat lain (perubahan terakhir menang).
 - **Konsol admin** (`/app/admin`) membaca semua koleksi secara real-time lewat
@@ -346,6 +394,13 @@ Sidebar dibagi 8 grup, dan panel apa pun bisa dicari dari bilah atas (atau
   Analitik, Moderasi, Umpan Balik, Broadcast, Jejak Audit, Keamanan, Tiket,
   Pengumuman, Status Sistem.
 
+## Berkas rules siap salin
+
+Seluruh Rules Firestore juga tersedia sebagai berkas `firestore.rules` di akar
+proyek. Salin isinya utuh ke Firebase Console → Firestore → Rules → Publish.
+
+---
+
 ## Peta panel admin: efeknya di mana
 
 Setiap panel punya salah satu status ini di **mode Firebase**:
@@ -370,7 +425,7 @@ Setiap panel punya salah satu status ini di **mode Firebase**:
 | Jejak Audit | Nyata | Otomatis mencatat setiap buat/ubah/hapus dari panel admin |
 | Konten | Nyata | Artikel berstatus **terbit** dan berisi tampil di Pusat Bantuan `/help` (bisa diubah lewat tombol Ubah) |
 | Media, Kategori & Tag, Moderasi, Bahasa | Tersimpan | Belum ada layar pengguna yang menampilkan |
-| Tim, Undangan | Nyata | Pengguna membuat tim di Pengaturan → Tim, mengundang lewat email, dan menjawab undangan di lonceng. Panel admin menampilkan semuanya |
+| Tim, Undangan | Nyata | Pengguna membuat tim di Pengaturan → Tim, mengundang lewat email atau **tautan** `/<kode>/invite/<tim>`, dan menjawab undangan di lonceng. Tiap tim punya **ruang tim** (`/app/team/<id>`) dengan obrolan real-time dan catatan tim. Panel admin menampilkan semuanya |
 | Peran & Izin | Tersimpan | Hak akses nyata hanya `owner`/`admin` vs `member`; peran dalam tim: pemilik, admin, anggota |
 | Notifikasi, Laporan | Tersimpan | Pakai Pengumuman/Broadcast untuk pesan ke pengguna |
 | Langganan, Faktur, Transaksi, Kupon | Butuh backend | Perlu payment gateway (mis. Midtrans/Xendit) dan server |

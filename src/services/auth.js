@@ -420,6 +420,18 @@ export const authService = {
         )
         out[name] = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
       }
+      out.teamMessages = []
+      for (const membership of out.memberships) {
+        const messages = await ctx.fs.getDocs(
+          ctx.fs.query(
+            ctx.fs.collection(ctx.db, 'teams', membership.teamId, 'messages'),
+            ctx.fs.where('uid', '==', uid),
+          ),
+        )
+        out.teamMessages.push(
+          ...messages.docs.map((d) => ({ id: d.id, teamId: membership.teamId, ...d.data() })),
+        )
+      }
       return out
     } catch (error) {
       throw friendly(error)
@@ -470,6 +482,20 @@ export const authService = {
         throw new Error(
           `Kamu masih pemilik tim "${teamName}". Hapus tim itu dulu sebelum menghapus akun.`,
         )
+      }
+
+      // pesan obrolan tim yang kamu kirim (dihapus sebelum keanggotaan dihapus)
+      const joined = await ctx.fs.getDocs(
+        ctx.fs.query(ctx.fs.collection(ctx.db, 'memberships'), ctx.fs.where('uid', '==', uid)),
+      )
+      for (const entry of joined.docs) {
+        const messages = await ctx.fs.getDocs(
+          ctx.fs.query(
+            ctx.fs.collection(ctx.db, 'teams', entry.data().teamId, 'messages'),
+            ctx.fs.where('uid', '==', uid),
+          ),
+        )
+        await Promise.all(messages.docs.map((d) => ctx.fs.deleteDoc(d.ref)))
       }
 
       for (const name of ['activities', 'tickets', 'feedback', 'memberships']) {
